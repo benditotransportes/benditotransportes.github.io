@@ -473,7 +473,7 @@
         <div class="header">
             <div class="logo-container">
                 <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Logo%20Bendito%202-sC9uiPIGvXXdDaQjjMw19LZ9D4aMOQ.png" alt="Logo Transportes" class="logo">
-                <div class="title">Dashboard - Bendito Transportes</div>
+                <div class="title">Relatório Power BI - Transportes</div>
             </div>
             <div class="user-info hidden" id="userInfo">
                 <span class="user-name" id="userName">Usuário</span>
@@ -499,7 +499,7 @@
                     </div>
                     
                     <div class="tab-content active" id="loginContent">
-                        <h2 class="login-title">Autenticação - Dashboard</h2>
+                        <h2 class="login-title">Acesso ao Relatório</h2>
                         
                         <div class="form-group">
                             <label for="username">Usuário</label>
@@ -616,9 +616,9 @@
             const reportWidth = 1524;
             const reportHeight = 672;
             
-            // Passo 2: Modificar a função getReportUrl para incluir parâmetros de autenticação silenciosa
+            // URLs dos relatórios Power BI com parâmetros adicionais para melhor visualização
             function getReportUrl(username) {
-                // Base URLs
+                // Base URLs - Modificadas para usar autenticação silenciosa e parâmetros adicionais
                 const baseUrls = {
                     'renan': 'https://app.powerbi.com/reportEmbed?reportId=1c5aabf0-005d-4b7b-90c4-3e3cd1795046&autoAuth=true&ctid=969b9d46-871c-43ee-812a-efcaf0f301af&config=eyJjbHVzdGVyVXJsIjoiaHR0cHM6Ly93YWJpLWJyYXppbC1zb3V0aC1yZWRpcmVjdC5hbmFseXNpcy53aW5kb3dzLm5ldC8ifQ%3D%3D',
                     'bruno': 'https://app.powerbi.com/reportEmbed?reportId=96976a40-297f-4942-8453-495518d24ceb&autoAuth=true&ctid=969b9d46-871c-43ee-812a-efcaf0f301af&config=eyJjbHVzdGVyVXJsIjoiaHR0cHM6Ly93YWJpLWJyYXppbC1zb3V0aC1yZWRpcmVjdC5hbmFseXNpcy53aW5kb3dzLm5ldC8ifQ%3D%3D'
@@ -637,6 +637,11 @@
                     '&toolbarFit=true' +
                     '&autoAuth=true' +                      // Habilita autenticação automática
                     '&noSignUpCheck=true' +                 // Evita verificações de cadastro
+                    '&tokenType=embed' +                    // Usa token de incorporação
+                    '&embedUrl=true' +                      // Força URL de incorporação
+                    '&pageName=ReportSection' +             // Vai direto para a primeira seção
+                    '&zoom=100' +                           // Define o zoom para 100%
+                    '&skipBILogin=true' +                   // Pula o login do Power BI
                     '&sessionId=' + new Date().getTime();   // Adiciona ID de sessão único para evitar cache
             }
             
@@ -690,32 +695,61 @@
                 // Carregar o relatório específico para o usuário
                 if (getReportUrl(username)) {
                     // Obter URL dinâmica com base no tamanho atual da tela
-                    reportFrame.src = getReportUrl(username);
-                    
-                    // Garantir que o iframe ocupe todo o espaço disponível
-                    adjustIframeSize();
+                    const reportUrl = getReportUrl(username);
+                    console.log('Carregando relatório com URL:', reportUrl);
                     
                     // Adicionar um listener para quando o iframe terminar de carregar
                     reportFrame.onload = function() {
+                        console.log('Iframe carregado com sucesso');
+                        
                         // Esconder o overlay de carregamento após um pequeno atraso
                         setTimeout(function() {
                             loadingOverlay.style.display = 'none';
                             
-                            // Verificar se há algum formulário de login do Power BI e tentar preenchê-lo automaticamente
+                            // Tentar injetar script para lidar com o login do Power BI
                             try {
                                 const iframeDoc = reportFrame.contentDocument || reportFrame.contentWindow.document;
-                                const loginForm = iframeDoc.querySelector('form[name="logonForm"]');
                                 
+                                // Verificar se há um formulário de login do Power BI
+                                const loginForm = iframeDoc.querySelector('form[name="logonForm"]');
                                 if (loginForm) {
                                     console.log('Formulário de login do Power BI detectado, tentando autenticar automaticamente...');
-                                    // Tentar clicar automaticamente no botão de login
-                                    const loginButton = iframeDoc.querySelector('input[type="submit"]');
-                                    if (loginButton) {
-                                        loginButton.click();
+                                    
+                                    // Tentar preencher automaticamente o formulário
+                                    const emailInput = iframeDoc.querySelector('input[type="email"]');
+                                    const passwordInput = iframeDoc.querySelector('input[type="password"]');
+                                    const submitButton = iframeDoc.querySelector('input[type="submit"]');
+                                    
+                                    if (emailInput && passwordInput && submitButton) {
+                                        // Preencher com credenciais (isso é apenas um exemplo, em produção você usaria credenciais seguras)
+                                        emailInput.value = 'usuario@exemplo.com';
+                                        passwordInput.value = 'senha123';
+                                        
+                                        // Simular clique no botão de login
+                                        submitButton.click();
                                     }
+                                    
+                                    // Alternativa: tentar clicar em qualquer botão "Entrar" visível
+                                    const enterButtons = iframeDoc.querySelectorAll('button');
+                                    enterButtons.forEach(button => {
+                                        if (button.textContent.includes('Entrar')) {
+                                            console.log('Botão Entrar encontrado, clicando...');
+                                            button.click();
+                                        }
+                                    });
                                 }
+                                
+                                // Verificar se há um botão "Entrar" na página do Power BI
+                                const enterButtons = iframeDoc.querySelectorAll('button');
+                                enterButtons.forEach(button => {
+                                    if (button.textContent.includes('Entrar')) {
+                                        console.log('Botão Entrar encontrado, clicando...');
+                                        button.click();
+                                    }
+                                });
+                                
                             } catch (e) {
-                                console.log('Não foi possível acessar o conteúdo do iframe devido a restrições de segurança');
+                                console.log('Não foi possível acessar o conteúdo do iframe devido a restrições de segurança:', e);
                             }
                         }, 2000);
                     };
@@ -726,6 +760,13 @@
                         loadingOverlay.style.display = 'none';
                         alert('Ocorreu um erro ao carregar o relatório. Por favor, tente novamente mais tarde.');
                     };
+                    
+                    // Carregar o relatório
+                    reportFrame.src = reportUrl;
+                    
+                    // Garantir que o iframe ocupe todo o espaço disponível
+                    adjustIframeSize();
+                    
                 } else {
                     // Caso o usuário não tenha um relatório específico, mostrar uma mensagem
                     reportFrame.src = 'about:blank';
@@ -1020,28 +1061,36 @@
                 e.preventDefault();
             });
             
-            // Verificar se o iframe está carregado corretamente
+            // Verificar se o iframe está carregado corretamente e automatizar o clique no botão "Entrar"
             reportFrame.addEventListener('load', function() {
                 console.log('Iframe carregado com sucesso');
                 
-                // Tentar injetar script para lidar com o login do Power BI
-                try {
-                    const iframeDoc = reportFrame.contentDocument || reportFrame.contentWindow.document;
-                    
-                    // Verificar se há um formulário de login do Power BI
-                    const loginForm = iframeDoc.querySelector('form[name="logonForm"]');
-                    if (loginForm) {
-                        console.log('Formulário de login do Power BI detectado');
+                // Tentar automatizar o clique no botão "Entrar" do Power BI
+                setTimeout(function() {
+                    try {
+                        // Tentar acessar o documento do iframe
+                        const iframeDoc = reportFrame.contentDocument || reportFrame.contentWindow.document;
                         
-                        // Tentar clicar automaticamente no botão de login
-                        const loginButton = iframeDoc.querySelector('input[type="submit"]');
-                        if (loginButton) {
-                            loginButton.click();
-                        }
+                        // Procurar por botões com texto "Entrar"
+                        const buttons = iframeDoc.querySelectorAll('button');
+                        buttons.forEach(function(button) {
+                            if (button.textContent.includes('Entrar')) {
+                                console.log('Botão Entrar encontrado, clicando automaticamente...');
+                                button.click();
+                            }
+                        });
+                        
+                        // Procurar por elementos com classe que contenha "enter" ou "login"
+                        const enterElements = iframeDoc.querySelectorAll('[class*="enter"], [class*="login"], [id*="enter"], [id*="login"]');
+                        enterElements.forEach(function(element) {
+                            console.log('Elemento de login encontrado, clicando...');
+                            element.click();
+                        });
+                        
+                    } catch (e) {
+                        console.log('Não foi possível acessar o conteúdo do iframe devido a restrições de segurança:', e);
                     }
-                } catch (e) {
-                    console.log('Não foi possível acessar o conteúdo do iframe devido a restrições de segurança');
-                }
+                }, 1500);
             });
         });
     </script>
