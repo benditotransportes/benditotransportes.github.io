@@ -112,6 +112,46 @@
             height: calc(100vh - 60px); /* Altura total menos a altura do header */
             overflow: hidden;
             background-color: transparent; /* Fundo transparente para o conteúdo */
+            width: 100%;
+        }
+        
+        .report-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: transparent;
+        }
+        
+        /* Passo 1: Adicionar estilos para o overlay de carregamento */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 5;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #1e5631;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
         
         iframe {
@@ -124,6 +164,7 @@
             right: 0;
             bottom: 0;
             background-color: transparent; /* Fundo transparente para o iframe */
+            overflow: hidden;
         }
         
         .login-container {
@@ -442,7 +483,13 @@
         </div>
         
         <div class="content">
-            <iframe id="reportFrame" src="about:blank" allowFullScreen="true" style="border:0; display:block; width:100%; height:100%; background-color:transparent;"></iframe>
+            <div class="report-container">
+                <!-- Passo 1: Adicionar o overlay de carregamento -->
+                <div id="loadingOverlay" class="loading-overlay">
+                    <div class="spinner"></div>
+                </div>
+                <iframe id="reportFrame" src="about:blank" allowFullScreen="true" style="border:0; display:block; width:100%; height:100%; background-color:transparent;"></iframe>
+            </div>
             
             <div class="login-container" id="loginContainer">
                 <div class="login-box">
@@ -536,6 +583,7 @@
             // Elementos do DOM
             const loginContainer = document.getElementById('loginContainer');
             const reportFrame = document.getElementById('reportFrame');
+            const loadingOverlay = document.getElementById('loadingOverlay');
             const userInfo = document.getElementById('userInfo');
             const userName = document.getElementById('userName');
             const loginButton = document.getElementById('loginButton');
@@ -568,11 +616,29 @@
             const reportWidth = 1524;
             const reportHeight = 672;
             
-            // URLs dos relatórios Power BI com parâmetros adicionais para melhor visualização
-            const reportUrls = {
-                'renan': 'https://app.powerbi.com/reportEmbed?reportId=1c5aabf0-005d-4b7b-90c4-3e3cd1795046&autoAuth=true&ctid=969b9d46-871c-43ee-812a-efcaf0f301af&config=eyJjbHVzdGVyVXJsIjoiaHR0cHM6Ly93YWJpLWJyYXppbC1zb3V0aC1yZWRpcmVjdC5hbmFseXNpcy53aW5kb3dzLm5ldC8ifQ%3D%3D&filterPaneEnabled=false&navContentPaneEnabled=false&width=' + reportWidth + '&height=' + reportHeight,
-                'bruno': 'https://app.powerbi.com/reportEmbed?reportId=96976a40-297f-4942-8453-495518d24ceb&autoAuth=true&ctid=969b9d46-871c-43ee-812a-efcaf0f301af&config=eyJjbHVzdGVyVXJsIjoiaHR0cHM6Ly93YWJpLWJyYXppbC1zb3V0aC1yZWRpcmVjdC5hbmFseXNpcy53aW5kb3dzLm5ldC8ifQ%3D%3D&filterPaneEnabled=false&navContentPaneEnabled=false&width=' + reportWidth + '&height=' + reportHeight
-            };
+            // Passo 2: Modificar a função getReportUrl para incluir parâmetros de autenticação silenciosa
+            function getReportUrl(username) {
+                // Base URLs
+                const baseUrls = {
+                    'renan': 'https://app.powerbi.com/reportEmbed?reportId=1c5aabf0-005d-4b7b-90c4-3e3cd1795046&autoAuth=true&ctid=969b9d46-871c-43ee-812a-efcaf0f301af&config=eyJjbHVzdGVyVXJsIjoiaHR0cHM6Ly93YWJpLWJyYXppbC1zb3V0aC1yZWRpcmVjdC5hbmFseXNpcy53aW5kb3dzLm5ldC8ifQ%3D%3D',
+                    'bruno': 'https://app.powerbi.com/reportEmbed?reportId=96976a40-297f-4942-8453-495518d24ceb&autoAuth=true&ctid=969b9d46-871c-43ee-812a-efcaf0f301af&config=eyJjbHVzdGVyVXJsIjoiaHR0cHM6Ly93YWJpLWJyYXppbC1zb3V0aC1yZWRpcmVjdC5hbmFseXNpcy53aW5kb3dzLm5ldC8ifQ%3D%3D'
+                };
+                
+                // Obter dimensões atuais da janela
+                const windowWidth = window.innerWidth;
+                const windowHeight = window.innerHeight - 60; // Subtrair altura do cabeçalho
+                
+                // Adicionar parâmetros para melhor visualização e autenticação silenciosa
+                return baseUrls[username] + 
+                    '&filterPaneEnabled=false' + 
+                    '&navContentPaneEnabled=false' + 
+                    '&width=' + windowWidth + 
+                    '&height=' + windowHeight + 
+                    '&toolbarFit=true' +
+                    '&autoAuth=true' +                      // Habilita autenticação automática
+                    '&noSignUpCheck=true' +                 // Evita verificações de cadastro
+                    '&sessionId=' + new Date().getTime();   // Adiciona ID de sessão único para evitar cache
+            }
             
             // Usuários (em um ambiente real, isso estaria em um banco de dados)
             // Aqui estamos simulando com localStorage para persistência
@@ -614,19 +680,56 @@
                 userInfo.classList.remove('hidden');
                 loginContainer.classList.add('hidden');
                 
+                // Mostrar o overlay de carregamento
+                loadingOverlay.style.display = 'flex';
+                
                 // Definir o fundo do body e do contêiner como transparente
                 document.body.style.backgroundColor = 'transparent';
                 document.querySelector('.content').style.backgroundColor = 'transparent';
                 
                 // Carregar o relatório específico para o usuário
-                if (reportUrls[username]) {
-                    reportFrame.src = reportUrls[username];
+                if (getReportUrl(username)) {
+                    // Obter URL dinâmica com base no tamanho atual da tela
+                    reportFrame.src = getReportUrl(username);
                     
                     // Garantir que o iframe ocupe todo o espaço disponível
                     adjustIframeSize();
+                    
+                    // Adicionar um listener para quando o iframe terminar de carregar
+                    reportFrame.onload = function() {
+                        // Esconder o overlay de carregamento após um pequeno atraso
+                        setTimeout(function() {
+                            loadingOverlay.style.display = 'none';
+                            
+                            // Verificar se há algum formulário de login do Power BI e tentar preenchê-lo automaticamente
+                            try {
+                                const iframeDoc = reportFrame.contentDocument || reportFrame.contentWindow.document;
+                                const loginForm = iframeDoc.querySelector('form[name="logonForm"]');
+                                
+                                if (loginForm) {
+                                    console.log('Formulário de login do Power BI detectado, tentando autenticar automaticamente...');
+                                    // Tentar clicar automaticamente no botão de login
+                                    const loginButton = iframeDoc.querySelector('input[type="submit"]');
+                                    if (loginButton) {
+                                        loginButton.click();
+                                    }
+                                }
+                            } catch (e) {
+                                console.log('Não foi possível acessar o conteúdo do iframe devido a restrições de segurança');
+                            }
+                        }, 2000);
+                    };
+                    
+                    // Adicionar um listener para erros de carregamento
+                    reportFrame.onerror = function() {
+                        console.error('Erro ao carregar o relatório');
+                        loadingOverlay.style.display = 'none';
+                        alert('Ocorreu um erro ao carregar o relatório. Por favor, tente novamente mais tarde.');
+                    };
                 } else {
                     // Caso o usuário não tenha um relatório específico, mostrar uma mensagem
                     reportFrame.src = 'about:blank';
+                    loadingOverlay.style.display = 'none';
                     alert('Nenhum relatório disponível para este usuário.');
                 }
             }
@@ -637,28 +740,30 @@
                 const windowHeight = window.innerHeight;
                 const windowWidth = window.innerWidth;
                 
-                // Definir altura e largura do iframe
-                reportFrame.style.height = (windowHeight - headerHeight) + 'px';
-                reportFrame.style.width = windowWidth + 'px';
+                // Definir altura e largura do iframe e seu contêiner
+                const reportContainer = document.querySelector('.report-container');
+                reportContainer.style.height = (windowHeight - headerHeight) + 'px';
+                reportContainer.style.width = '100%';
                 
-                // Adicionar escala para garantir que o relatório se ajuste à tela
-                const scaleX = windowWidth / reportWidth;
-                const scaleY = (windowHeight - headerHeight) / reportHeight;
-                const scale = Math.min(scaleX, scaleY);
-                
-                // Aplicar transformação apenas se necessário
-                if (scale < 1) {
-                    reportFrame.style.transform = `scale(${scale})`;
-                    reportFrame.style.transformOrigin = 'top left';
-                } else {
-                    reportFrame.style.transform = 'none';
-                }
+                // Forçar o iframe a ocupar 100% do espaço disponível
+                reportFrame.style.width = '100%';
+                reportFrame.style.height = '100%';
+                reportFrame.style.position = 'absolute';
+                reportFrame.style.top = '0';
+                reportFrame.style.left = '0';
+                reportFrame.style.right = '0';
+                reportFrame.style.bottom = '0';
+                reportFrame.style.border = 'none';
+                reportFrame.style.margin = '0';
+                reportFrame.style.padding = '0';
+                reportFrame.style.overflow = 'hidden';
             }
             
             // Ajustar tamanho do iframe quando a janela for redimensionada
             window.addEventListener('resize', function() {
                 if (localStorage.getItem('currentUser')) {
-                    adjustIframeSize();
+                    // Pequeno atraso para garantir que o redimensionamento seja concluído
+                    setTimeout(adjustIframeSize, 100);
                 }
             });
             
@@ -798,6 +903,7 @@
                 userInfo.classList.add('hidden');
                 loginContainer.classList.remove('hidden');
                 reportFrame.src = 'about:blank';
+                loadingOverlay.style.display = 'none';
                 clearLoginForm();
                 clearRegisterForm();
                 switchTab('login');
@@ -861,6 +967,15 @@
                 passwordError.classList.add('visible');
             }
             
+            // Função para lidar com mensagens do iframe
+            window.addEventListener('message', function(event) {
+                // Verificar se a mensagem é do Power BI
+                if (event.data && event.data.type === 'powerbi-login') {
+                    console.log('Recebida mensagem de login do Power BI');
+                    // Aqui você poderia implementar lógica para lidar com o login do Power BI
+                }
+            });
+            
             // Event Listeners
             loginButton.addEventListener('click', login);
             registerButton.addEventListener('click', register);
@@ -903,6 +1018,30 @@
             // Prevenir zoom em dispositivos móveis ao focar nos inputs
             document.addEventListener('gesturestart', function(e) {
                 e.preventDefault();
+            });
+            
+            // Verificar se o iframe está carregado corretamente
+            reportFrame.addEventListener('load', function() {
+                console.log('Iframe carregado com sucesso');
+                
+                // Tentar injetar script para lidar com o login do Power BI
+                try {
+                    const iframeDoc = reportFrame.contentDocument || reportFrame.contentWindow.document;
+                    
+                    // Verificar se há um formulário de login do Power BI
+                    const loginForm = iframeDoc.querySelector('form[name="logonForm"]');
+                    if (loginForm) {
+                        console.log('Formulário de login do Power BI detectado');
+                        
+                        // Tentar clicar automaticamente no botão de login
+                        const loginButton = iframeDoc.querySelector('input[type="submit"]');
+                        if (loginButton) {
+                            loginButton.click();
+                        }
+                    }
+                } catch (e) {
+                    console.log('Não foi possível acessar o conteúdo do iframe devido a restrições de segurança');
+                }
             });
         });
     </script>
