@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dashboard - Bendito Transportes</title>
+    <title>Relatório Power BI - Transportes</title>
     <style>
         * {
             box-sizing: border-box;
@@ -29,7 +29,7 @@
         }
         
         .header {
-            background: linear-gradient(to right, #1a2a6c, #b21f1f, #fdbb2d);
+            background: linear-gradient(to right, #1e5631, #2e7d32, #8bc34a);
             color: white;
             padding: 8px 16px;
             display: flex;
@@ -132,7 +132,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(135deg, rgba(26, 42, 108, 0.9), rgba(178, 31, 31, 0.8), rgba(253, 187, 45, 0.7));
+            background: linear-gradient(135deg, rgba(30, 86, 49, 0.9), rgba(46, 125, 50, 0.8), rgba(212, 175, 55, 0.7));
             display: flex;
             justify-content: center;
             align-items: center;
@@ -150,7 +150,7 @@
         }
         
         .login-title {
-            color: #1a2a6c;
+            color: #1e5631;
             margin-bottom: 20px;
             font-size: 22px;
             text-align: center;
@@ -179,12 +179,12 @@
         
         input:focus {
             outline: none;
-            border-color: #fdbb2d;
-            box-shadow: 0 0 0 2px rgba(253, 187, 45, 0.2);
+            border-color: #8bc34a;
+            box-shadow: 0 0 0 2px rgba(139, 195, 74, 0.2);
         }
         
         .error-message {
-            color: #b21f1f;
+            color: #e53935;
             font-size: 14px;
             margin-top: 5px;
             display: none;
@@ -201,7 +201,7 @@
         }
         
         .login-button {
-            background: linear-gradient(to right, #1a2a6c, #b21f1f);
+            background: linear-gradient(to right, #1e5631, #2e7d32);
             color: white;
             border: none;
             padding: 12px 20px;
@@ -215,12 +215,12 @@
         }
         
         .login-button:hover {
-            background: linear-gradient(to right, #15225a, #9c1b1b);
+            background: linear-gradient(to right, #184a29, #256e29);
             transform: translateY(-1px);
         }
         
         .register-button {
-            background: linear-gradient(to right, #fdbb2d, #b21f1f);
+            background: linear-gradient(to right, #d4af37, #8bc34a);
             color: white;
             border: none;
             padding: 12px 20px;
@@ -235,7 +235,7 @@
         }
         
         .register-button:hover {
-            background: linear-gradient(to right, #e5a928, #9c1b1b);
+            background: linear-gradient(to right, #c19b2e, #7cb342);
             transform: translateY(-1px);
         }
         
@@ -247,7 +247,7 @@
         }
         
         .auth-link {
-            color: #1a2a6c;
+            color: #1e5631;
             text-decoration: none;
             cursor: pointer;
         }
@@ -285,7 +285,7 @@
         }
         
         .modal-title {
-            color: #1a2a6c;
+            color: #1e5631;
             margin-bottom: 20px;
             font-size: 20px;
         }
@@ -309,12 +309,12 @@
         }
         
         .modal-button.primary {
-            background: linear-gradient(to right, #1a2a6c, #b21f1f);
+            background: linear-gradient(to right, #1e5631, #2e7d32);
             color: white;
         }
         
         .modal-button.primary:hover {
-            background: linear-gradient(to right, #15225a, #9c1b1b);
+            background: linear-gradient(to right, #184a29, #256e29);
         }
         
         .modal-button.secondary {
@@ -345,7 +345,7 @@
         }
         
         .tab.active {
-            color: #1a2a6c;
+            color: #1e5631;
         }
         
         .tab.active::after {
@@ -355,7 +355,7 @@
             left: 0;
             right: 0;
             height: 2px;
-            background: linear-gradient(to right, #1a2a6c, #b21f1f);
+            background: linear-gradient(to right, #1e5631, #8bc34a);
         }
         
         .tab-content {
@@ -422,7 +422,7 @@
             }
             
             .tab.active {
-                border-bottom: 2px solid #1a2a6c;
+                border-bottom: 2px solid #1e5631;
             }
         }
     </style>
