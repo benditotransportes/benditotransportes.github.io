@@ -612,16 +612,39 @@
         const confirmPassword = document.getElementById('confirmPassword');
         const registerError = document.getElementById('registerError');
         
-        // Dimensões específicas para o relatório
-        const reportWidth = 1524;
-        const reportHeight = 672;
-        
         // URLs dos relatórios Power BI
         // Agora usando a URL de incorporação direta para o usuário bruno
-        const reportUrls = {
-            'renan': 'https://app.powerbi.com/reportEmbed?reportId=1c5aabf0-005d-4b7b-90c4-3e3cd1795046&autoAuth=true&ctid=969b9d46-871c-43ee-812a-efcaf0f301af&config=eyJjbHVzdGVyVXJsIjoiaHR0cHM6Ly93YWJpLWJyYXppbC1zb3V0aC1yZWRpcmVjdC5hbmFseXNpcy53aW5kb3dzLm5ldC8ifQ%3D%3D',
-            'bruno': 'https://app.powerbi.com/view?r=eyJrIjoiNDUxZjg2ZDctMTk2YS00MDdhLTg3NTUtMmIzYTU2OTVlMTliIiwidCI6Ijk2OWI5ZDQ2LTg3MWMtNDNlZS04MTJhLWVmY2FmMGYzMDFhZiJ9'
-        };
+        // Adicionando parâmetros para melhorar o dimensionamento automático
+        function getReportUrl(username) {
+            const baseUrls = {
+                'renan': 'https://app.powerbi.com/reportEmbed?reportId=1c5aabf0-005d-4b7b-90c4-3e3cd1795046&autoAuth=true&ctid=969b9d46-871c-43ee-812a-efcaf0f301af&config=eyJjbHVzdGVyVXJsIjoiaHR0cHM6Ly93YWJpLWJyYXppbC1zb3V0aC1yZWRpcmVjdC5hbmFseXNpcy53aW5kb3dzLm5ldC8ifQ%3D%3D',
+                'bruno': 'https://app.powerbi.com/view?r=eyJrIjoiNDUxZjg2ZDctMTk2YS00MDdhLTg3NTUtMmIzYTU2OTVlMTliIiwidCI6Ijk2OWI5ZDQ2LTg3MWMtNDNlZS04MTJhLWVmY2FmMGYzMDFhZiJ9'
+            };
+            
+            // Obter dimensões atuais da janela
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight - 60; // Subtrair altura do cabeçalho
+            
+            // Adicionar parâmetros para melhor visualização
+            let url = baseUrls[username];
+            
+            // Adicionar parâmetros apenas se não existirem na URL
+            if (!url.includes('&width=') && !url.includes('?width=')) {
+                url += (url.includes('?') ? '&' : '?') + 'width=' + windowWidth;
+            }
+            
+            if (!url.includes('&height=') && !url.includes('?height=')) {
+                url += (url.includes('?') ? '&' : '?') + 'height=' + windowHeight;
+            }
+            
+            // Adicionar parâmetros para melhorar a visualização
+            url += '&filterPaneEnabled=false&navContentPaneEnabled=false';
+            
+            // Adicionar timestamp para evitar cache
+            url += '&_ts=' + new Date().getTime();
+            
+            return url;
+        }
         
         // Usuários (em um ambiente real, isso estaria em um banco de dados)
         // Aqui estamos simulando com localStorage para persistência
@@ -669,38 +692,37 @@
             document.querySelector('.content').style.backgroundColor = 'transparent';
             
             // Verificar se o usuário tem um relatório configurado
-            if (reportUrls[username]) {
-                console.log(`Carregando relatório para o usuário ${username}`);
+            console.log(`Carregando relatório para o usuário ${username}`);
+            
+            // Obter URL dinâmica com base no tamanho atual da tela
+            const reportUrl = getReportUrl(username);
+            console.log('URL do relatório:', reportUrl);
+            
+            // Carregar o relatório
+            reportFrame.src = reportUrl;
+            
+            // Adicionar um listener para quando o iframe terminar de carregar
+            reportFrame.onload = function() {
+                console.log('Relatório carregado com sucesso');
                 
-                // Carregar o relatório
-                reportFrame.src = reportUrls[username];
-                
-                // Adicionar um listener para quando o iframe terminar de carregar
-                reportFrame.onload = function() {
-                    console.log('Relatório carregado com sucesso');
-                    
-                    // Esconder o overlay de carregamento após um pequeno atraso
-                    setTimeout(function() {
-                        loadingOverlay.style.display = 'none';
-                    }, 1000);
-                };
-                
-                // Adicionar um listener para erros de carregamento
-                reportFrame.onerror = function() {
-                    console.error('Erro ao carregar o relatório');
+                // Esconder o overlay de carregamento após um pequeno atraso
+                setTimeout(function() {
                     loadingOverlay.style.display = 'none';
-                    alert('Ocorreu um erro ao carregar o relatório. Por favor, tente novamente mais tarde.');
-                };
-                
-                // Garantir que o iframe ocupe todo o espaço disponível
-                adjustIframeSize();
-                
-            } else {
-                // Caso o usuário não tenha um relatório específico, mostrar uma mensagem
-                reportFrame.src = 'about:blank';
+                    
+                    // Ajustar o tamanho do iframe novamente após o carregamento
+                    adjustIframeSize();
+                }, 1000);
+            };
+            
+            // Adicionar um listener para erros de carregamento
+            reportFrame.onerror = function() {
+                console.error('Erro ao carregar o relatório');
                 loadingOverlay.style.display = 'none';
-                alert('Nenhum relatório disponível para este usuário.');
-            }
+                alert('Ocorreu um erro ao carregar o relatório. Por favor, tente novamente mais tarde.');
+            };
+            
+            // Garantir que o iframe ocupe todo o espaço disponível
+            adjustIframeSize();
         }
         
         // Função para ajustar o tamanho do iframe
@@ -708,6 +730,8 @@
             const headerHeight = document.querySelector('.header').offsetHeight;
             const windowHeight = window.innerHeight;
             const windowWidth = window.innerWidth;
+            
+            console.log(`Ajustando iframe para: ${windowWidth}x${windowHeight - headerHeight}`);
             
             // Definir altura e largura do iframe e seu contêiner
             const reportContainer = document.querySelector('.report-container');
@@ -726,14 +750,23 @@
             reportFrame.style.margin = '0';
             reportFrame.style.padding = '0';
             reportFrame.style.overflow = 'hidden';
+            
+            // Se o usuário estiver logado, recarregar o relatório com as novas dimensões
+            const currentUser = localStorage.getItem('currentUser');
+            if (currentUser && reportFrame.src !== 'about:blank') {
+                // Recarregar o relatório com as novas dimensões
+                reportFrame.src = getReportUrl(currentUser);
+            }
         }
         
         // Ajustar tamanho do iframe quando a janela for redimensionada
         window.addEventListener('resize', function() {
-            if (localStorage.getItem('currentUser')) {
-                // Pequeno atraso para garantir que o redimensionamento seja concluído
-                setTimeout(adjustIframeSize, 100);
-            }
+            // Usar debounce para evitar muitas chamadas durante o redimensionamento
+            clearTimeout(window.resizeTimer);
+            window.resizeTimer = setTimeout(function() {
+                console.log('Janela redimensionada, ajustando iframe');
+                adjustIframeSize();
+            }, 250);
         });
         
         // Função para fazer login
@@ -813,7 +846,7 @@
             clearRegisterForm();
             alert('Cadastro realizado com sucesso! Faça login para continuar.');
             
-            // Mudar para a aba de login
+            //  Mudar para a aba de login
             switchTab('login');
         }
         
@@ -978,6 +1011,12 @@
         // Prevenir zoom em dispositivos móveis ao focar nos inputs
         document.addEventListener('gesturestart', function(e) {
             e.preventDefault();
+        });
+        
+        // Verificar se o iframe está carregado corretamente
+        reportFrame.addEventListener('load', function() {
+            console.log('Iframe carregado, ajustando tamanho');
+            adjustIframeSize();
         });
     });
 </script>
