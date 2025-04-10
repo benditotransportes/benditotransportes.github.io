@@ -1,1098 +1,985 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Relatório Power BI - Transportes</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            -webkit-tap-highlight-color: transparent;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: transparent;
-            height: 100vh;
-            overflow: hidden;
-            width: 100vw;
-        }
-        
-        .container {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            width: 100vw;
-            overflow: hidden;
-        }
-        
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Relatório Power BI - Transportes</title>
+<style>
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: transparent;
+        height: 100vh;
+        overflow: hidden;
+        width: 100vw;
+    }
+    
+    .container {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        width: 100vw;
+        overflow: hidden;
+    }
+    
+    .header {
+        background: linear-gradient(to right, #1e5631, #2e7d32, #8bc34a);
+        color: white;
+        padding: 8px 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        z-index: 10;
+        height: 60px; /* Altura aumentada para o cabeçalho */
+    }
+    
+    .logo-container {
+        display: flex;
+        align-items: center;
+    }
+    
+    .logo {
+        height: 40px;
+        margin-right: 12px;
+    }
+    
+    .title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #fff;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    }
+    
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .user-name {
+        font-weight: 500;
+        max-width: 100px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .button {
+        background-color: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-weight: 500;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        transition: background-color 0.2s;
+        font-size: 14px;
+    }
+    
+    .button:hover {
+        background-color: rgba(255, 255, 255, 0.3);
+    }
+    
+    .button.secondary {
+        background-color: transparent;
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+    }
+    
+    .button.secondary:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .button svg {
+        width: 14px;
+        height: 14px;
+    }
+    
+    .content {
+        flex-grow: 1;
+        display: flex;
+        position: relative;
+        height: calc(100vh - 60px); /* Altura total menos a altura do header */
+        overflow: hidden;
+        background-color: transparent; /* Fundo transparente para o conteúdo */
+        width: 100%;
+    }
+    
+    .report-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background-color: transparent;
+    }
+    
+    /* Estilos para o overlay de carregamento */
+    .loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(255, 255, 255, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 5;
+    }
+    
+    .spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid #1e5631;
+        border-radius: 50%;
+        border-top-color: transparent;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: transparent; /* Fundo transparente para o iframe */
+        overflow: hidden;
+    }
+    
+    .login-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(30, 86, 49, 0.9), rgba(46, 125, 50, 0.8), rgba(212, 175, 55, 0.7));
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10;
+        padding: 16px;
+    }
+    
+    .login-box {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        padding: 24px 20px;
+        width: 100%;
+        max-width: 400px;
+    }
+    
+    .login-title {
+        color: #1e5631;
+        margin-bottom: 20px;
+        font-size: 22px;
+        text-align: center;
+    }
+    
+    .form-group {
+        margin-bottom: 16px;
+    }
+    
+    label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 500;
+        color: #333;
+        font-size: 15px;
+    }
+    
+    input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 16px;
+        -webkit-appearance: none;
+    }
+    
+    input:focus {
+        outline: none;
+        border-color: #8bc34a;
+        box-shadow: 0 0 0 2px rgba(139, 195, 74, 0.2);
+    }
+    
+    .error-message {
+        color: #e53935;
+        font-size: 14px;
+        margin-top: 5px;
+        display: none;
+    }
+    
+    .error-message.visible {
+        display: block;
+    }
+    
+    .button-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 24px;
+    }
+    
+    .login-button {
+        background: linear-gradient(to right, #1e5631, #2e7d32);
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 4px;
+        font-weight: 500;
+        cursor: pointer;
+        font-size: 16px;
+        transition: all 0.2s;
+        width: 100%;
+        -webkit-appearance: none;
+    }
+    
+    .login-button:hover {
+        background: linear-gradient(to right, #184a29, #256e29);
+        transform: translateY(-1px);
+    }
+    
+    .register-button {
+        background: linear-gradient(to right, #d4af37, #8bc34a);
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 4px;
+        font-weight: 500;
+        cursor: pointer;
+        font-size: 16px;
+        transition: all 0.2s;
+        width: 100%;
+        -webkit-appearance: none;
+        margin-top: 10px;
+    }
+    
+    .register-button:hover {
+        background: linear-gradient(to right, #c19b2e, #7cb342);
+        transform: translateY(-1px);
+    }
+    
+    .auth-links {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 16px;
+        font-size: 14px;
+    }
+    
+    .auth-link {
+        color: #1e5631;
+        text-decoration: none;
+        cursor: pointer;
+    }
+    
+    .auth-link:hover {
+        text-decoration: underline;
+    }
+    
+    .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 100;
+        display: none;
+        padding: 16px;
+    }
+    
+    .modal.visible {
+        display: flex;
+    }
+    
+    .modal-content {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        padding: 24px 20px;
+        width: 100%;
+        max-width: 400px;
+    }
+    
+    .modal-title {
+        color: #1e5631;
+        margin-bottom: 20px;
+        font-size: 20px;
+    }
+    
+    .modal-buttons {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        margin-top: 24px;
+    }
+    
+    .modal-button {
+        padding: 12px 16px;
+        border-radius: 4px;
+        font-weight: 500;
+        cursor: pointer;
+        border: none;
+        flex: 1;
+        font-size: 15px;
+        transition: all 0.2s;
+    }
+    
+    .modal-button.primary {
+        background: linear-gradient(to right, #1e5631, #2e7d32);
+        color: white;
+    }
+    
+    .modal-button.primary:hover {
+        background: linear-gradient(to right, #184a29, #256e29);
+    }
+    
+    .modal-button.secondary {
+        background-color: #f5f5f5;
+        color: #333;
+    }
+    
+    .modal-button.secondary:hover {
+        background-color: #e5e5e5;
+    }
+    
+    .hidden {
+        display: none;
+    }
+    
+    .tabs {
+        display: flex;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #ddd;
+    }
+    
+    .tab {
+        padding: 10px 20px;
+        cursor: pointer;
+        font-weight: 500;
+        color: #666;
+        position: relative;
+    }
+    
+    .tab.active {
+        color: #1e5631;
+    }
+    
+    .tab.active::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(to right, #1e5631, #8bc34a);
+    }
+    
+    .tab-content {
+        display: none;
+    }
+    
+    .tab-content.active {
+        display: block;
+    }
+    
+    /* Estilos específicos para mobile */
+    @media (max-width: 480px) {
         .header {
-            background: linear-gradient(to right, #1e5631, #2e7d32, #8bc34a);
-            color: white;
-            padding: 8px 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            z-index: 10;
-            height: 60px; /* Altura aumentada para o cabeçalho */
-        }
-        
-        .logo-container {
-            display: flex;
-            align-items: center;
-        }
-        
-        .logo {
-            height: 40px;
-            margin-right: 12px;
+            padding: 10px 12px;
         }
         
         .title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #fff;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            font-size: 16px;
         }
         
         .user-info {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .user-name {
-            font-weight: 500;
-            max-width: 100px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            gap: 6px;
         }
         
         .button {
-            background-color: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            padding: 8px 12px;
-            border-radius: 4px;
-            font-weight: 500;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            transition: background-color 0.2s;
-            font-size: 14px;
+            padding: 6px 10px;
+            font-size: 13px;
         }
         
-        .button:hover {
-            background-color: rgba(255, 255, 255, 0.3);
+        .user-name {
+            max-width: 80px;
         }
         
-        .button.secondary {
-            background-color: transparent;
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.4);
-        }
-        
-        .button.secondary:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-        
-        .button svg {
-            width: 14px;
-            height: 14px;
-        }
-        
-        .content {
-            flex-grow: 1;
-            display: flex;
-            position: relative;
-            height: calc(100vh - 60px); /* Altura total menos a altura do header */
-            overflow: hidden;
-            background-color: transparent; /* Fundo transparente para o conteúdo */
-            width: 100%;
-        }
-        
-        .report-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background-color: transparent;
-        }
-        
-        /* Passo 1: Adicionar estilos para o overlay de carregamento */
-        .loading-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(255, 255, 255, 0.8);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 5;
-        }
-        
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid #1e5631;
-            border-radius: 50%;
-            border-top-color: transparent;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: transparent; /* Fundo transparente para o iframe */
-            overflow: hidden;
-        }
-        
-        .login-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(30, 86, 49, 0.9), rgba(46, 125, 50, 0.8), rgba(212, 175, 55, 0.7));
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
-            padding: 16px;
-        }
-        
-        .login-box {
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-            padding: 24px 20px;
-            width: 100%;
-            max-width: 400px;
+        .login-box, .modal-content {
+            padding: 20px 16px;
         }
         
         .login-title {
-            color: #1e5631;
-            margin-bottom: 20px;
-            font-size: 22px;
-            text-align: center;
-        }
-        
-        .form-group {
+            font-size: 20px;
             margin-bottom: 16px;
         }
         
-        label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 500;
-            color: #333;
-            font-size: 15px;
-        }
-        
         input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            padding: 10px;
             font-size: 16px;
-            -webkit-appearance: none;
         }
         
-        input:focus {
-            outline: none;
-            border-color: #8bc34a;
-            box-shadow: 0 0 0 2px rgba(139, 195, 74, 0.2);
-        }
-        
-        .error-message {
-            color: #e53935;
-            font-size: 14px;
-            margin-top: 5px;
-            display: none;
-        }
-        
-        .error-message.visible {
-            display: block;
-        }
-        
-        .button-container {
-            display: flex;
-            justify-content: center;
-            margin-top: 24px;
-        }
-        
-        .login-button {
-            background: linear-gradient(to right, #1e5631, #2e7d32);
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 4px;
-            font-weight: 500;
-            cursor: pointer;
-            font-size: 16px;
-            transition: all 0.2s;
-            width: 100%;
-            -webkit-appearance: none;
-        }
-        
-        .login-button:hover {
-            background: linear-gradient(to right, #184a29, #256e29);
-            transform: translateY(-1px);
-        }
-        
-        .register-button {
-            background: linear-gradient(to right, #d4af37, #8bc34a);
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 4px;
-            font-weight: 500;
-            cursor: pointer;
-            font-size: 16px;
-            transition: all 0.2s;
-            width: 100%;
-            -webkit-appearance: none;
-            margin-top: 10px;
-        }
-        
-        .register-button:hover {
-            background: linear-gradient(to right, #c19b2e, #7cb342);
-            transform: translateY(-1px);
-        }
-        
-        .auth-links {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 16px;
-            font-size: 14px;
-        }
-        
-        .auth-link {
-            color: #1e5631;
-            text-decoration: none;
-            cursor: pointer;
-        }
-        
-        .auth-link:hover {
-            text-decoration: underline;
-        }
-        
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-            display: none;
-            padding: 16px;
-        }
-        
-        .modal.visible {
-            display: flex;
-        }
-        
-        .modal-content {
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-            padding: 24px 20px;
-            width: 100%;
-            max-width: 400px;
-        }
-        
-        .modal-title {
-            color: #1e5631;
-            margin-bottom: 20px;
-            font-size: 20px;
-        }
-        
-        .modal-buttons {
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
-            margin-top: 24px;
-        }
-        
-        .modal-button {
+        .login-button, .modal-button, .register-button {
             padding: 12px 16px;
-            border-radius: 4px;
-            font-weight: 500;
-            cursor: pointer;
-            border: none;
-            flex: 1;
-            font-size: 15px;
-            transition: all 0.2s;
-        }
-        
-        .modal-button.primary {
-            background: linear-gradient(to right, #1e5631, #2e7d32);
-            color: white;
-        }
-        
-        .modal-button.primary:hover {
-            background: linear-gradient(to right, #184a29, #256e29);
-        }
-        
-        .modal-button.secondary {
-            background-color: #f5f5f5;
-            color: #333;
-        }
-        
-        .modal-button.secondary:hover {
-            background-color: #e5e5e5;
-        }
-        
-        .hidden {
-            display: none;
         }
         
         .tabs {
-            display: flex;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #ddd;
+            flex-direction: column;
+            border-bottom: none;
         }
         
         .tab {
-            padding: 10px 20px;
-            cursor: pointer;
-            font-weight: 500;
-            color: #666;
-            position: relative;
-        }
-        
-        .tab.active {
-            color: #1e5631;
+            padding: 8px 0;
+            border-bottom: 1px solid #ddd;
         }
         
         .tab.active::after {
-            content: '';
-            position: absolute;
-            bottom: -1px;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: linear-gradient(to right, #1e5631, #8bc34a);
-        }
-        
-        .tab-content {
             display: none;
         }
         
-        .tab-content.active {
-            display: block;
+        .tab.active {
+            border-bottom: 2px solid #1e5631;
         }
-        
-        /* Estilos específicos para mobile */
-        @media (max-width: 480px) {
-            .header {
-                padding: 10px 12px;
-            }
-            
-            .title {
-                font-size: 16px;
-            }
-            
-            .user-info {
-                gap: 6px;
-            }
-            
-            .button {
-                padding: 6px 10px;
-                font-size: 13px;
-            }
-            
-            .user-name {
-                max-width: 80px;
-            }
-            
-            .login-box, .modal-content {
-                padding: 20px 16px;
-            }
-            
-            .login-title {
-                font-size: 20px;
-                margin-bottom: 16px;
-            }
-            
-            input {
-                padding: 10px;
-                font-size: 16px;
-            }
-            
-            .login-button, .modal-button, .register-button {
-                padding: 12px 16px;
-            }
-            
-            .tabs {
-                flex-direction: column;
-                border-bottom: none;
-            }
-            
-            .tab {
-                padding: 8px 0;
-                border-bottom: 1px solid #ddd;
-            }
-            
-            .tab.active::after {
-                display: none;
-            }
-            
-            .tab.active {
-                border-bottom: 2px solid #1e5631;
-            }
-        }
-    </style>
+    }
+</style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="logo-container">
-                <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Logo%20Bendito%202-sC9uiPIGvXXdDaQjjMw19LZ9D4aMOQ.png" alt="Logo Transportes" class="logo">
-                <div class="title">Relatório Power BI - Transportes</div>
-            </div>
-            <div class="user-info hidden" id="userInfo">
-                <span class="user-name" id="userName">Usuário</span>
-                <button id="changePasswordButton" class="button secondary">Alterar</button>
-                <button id="logoutButton" class="button">Sair</button>
-            </div>
+<div class="container">
+    <div class="header">
+        <div class="logo-container">
+            <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Logo%20Bendito%202-sC9uiPIGvXXdDaQjjMw19LZ9D4aMOQ.png" alt="Logo Transportes" class="logo">
+            <div class="title">Relatório Power BI - Transportes</div>
         </div>
-        
-        <div class="content">
-            <div class="report-container">
-                <!-- Passo 1: Adicionar o overlay de carregamento -->
-                <div id="loadingOverlay" class="loading-overlay">
-                    <div class="spinner"></div>
-                </div>
-                <iframe id="reportFrame" src="about:blank" allowFullScreen="true" style="border:0; display:block; width:100%; height:100%; background-color:transparent;"></iframe>
-            </div>
-            
-            <div class="login-container" id="loginContainer">
-                <div class="login-box">
-                    <div class="tabs">
-                        <div class="tab active" id="loginTab">Login</div>
-                        <div class="tab" id="registerTab">Cadastro</div>
-                    </div>
-                    
-                    <div class="tab-content active" id="loginContent">
-                        <h2 class="login-title">Acesso ao Relatório</h2>
-                        
-                        <div class="form-group">
-                            <label for="username">Usuário</label>
-                            <input type="text" id="username" placeholder="Digite seu usuário" autocomplete="username">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="password">Senha</label>
-                            <input type="password" id="password" placeholder="Digite sua senha" autocomplete="current-password">
-                            <div class="error-message" id="loginError">Usuário ou senha incorretos. Tente novamente.</div>
-                        </div>
-                        
-                        <div class="button-container">
-                            <button id="loginButton" class="login-button">Entrar</button>
-                        </div>
-                    </div>
-                    
-                    <div class="tab-content" id="registerContent">
-                        <h2 class="login-title">Cadastre-se</h2>
-                        
-                        <div class="form-group">
-                            <label for="registerEmail">Email</label>
-                            <input type="email" id="registerEmail" placeholder="Digite seu email" autocomplete="email">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="registerUsername">Usuário</label>
-                            <input type="text" id="registerUsername" placeholder="Escolha um nome de usuário" autocomplete="username">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="registerPassword">Senha</label>
-                            <input type="password" id="registerPassword" placeholder="Crie uma senha" autocomplete="new-password">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="confirmPassword">Confirmar Senha</label>
-                            <input type="password" id="confirmPassword" placeholder="Confirme sua senha" autocomplete="new-password">
-                            <div class="error-message" id="registerError"></div>
-                        </div>
-                        
-                        <div class="button-container">
-                            <button id="registerButton" class="register-button">Cadastrar</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="user-info hidden" id="userInfo">
+            <span class="user-name" id="userName">Usuário</span>
+            <button id="changePasswordButton" class="button secondary">Alterar</button>
+            <button id="logoutButton" class="button">Sair</button>
         </div>
     </div>
     
-    <!-- Modal de Alteração de Senha -->
-    <div class="modal" id="changePasswordModal">
-        <div class="modal-content">
-            <h3 class="modal-title">Alterar Senha</h3>
-            
-            <div class="form-group">
-                <label for="currentPassword">Senha Atual</label>
-                <input type="password" id="currentPassword" placeholder="Digite sua senha atual" autocomplete="current-password">
+    <div class="content">
+        <div class="report-container">
+            <!-- Overlay de carregamento -->
+            <div id="loadingOverlay" class="loading-overlay">
+                <div class="spinner"></div>
             </div>
-            
-            <div class="form-group">
-                <label for="newPassword">Nova Senha</label>
-                <input type="password" id="newPassword" placeholder="Digite a nova senha" autocomplete="new-password">
-            </div>
-            
-            <div class="form-group">
-                <label for="confirmNewPassword">Confirmar Nova Senha</label>
-                <input type="password" id="confirmNewPassword" placeholder="Confirme a nova senha" autocomplete="new-password">
-                <div class="error-message" id="passwordError"></div>
-            </div>
-            
-            <div class="modal-buttons">
-                <button id="cancelChangePassword" class="modal-button secondary">Cancelar</button>
-                <button id="saveNewPassword" class="modal-button primary">Salvar</button>
+            <iframe id="reportFrame" src="about:blank" allowFullScreen="true" style="border:0; display:block; width:100%; height:100%; background-color:transparent;"></iframe>
+        </div>
+        
+        <div class="login-container" id="loginContainer">
+            <div class="login-box">
+                <div class="tabs">
+                    <div class="tab active" id="loginTab">Login</div>
+                    <div class="tab" id="registerTab">Cadastro</div>
+                </div>
+                
+                <div class="tab-content active" id="loginContent">
+                    <h2 class="login-title">Acesso ao Relatório</h2>
+                    
+                    <div class="form-group">
+                        <label for="username">Usuário</label>
+                        <input type="text" id="username" placeholder="Digite seu usuário" autocomplete="username">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Senha</label>
+                        <input type="password" id="password" placeholder="Digite sua senha" autocomplete="current-password">
+                        <div class="error-message" id="loginError">Usuário ou senha incorretos. Tente novamente.</div>
+                    </div>
+                    
+                    <div class="button-container">
+                        <button id="loginButton" class="login-button">Entrar</button>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="registerContent">
+                    <h2 class="login-title">Cadastre-se</h2>
+                    
+                    <div class="form-group">
+                        <label for="registerEmail">Email</label>
+                        <input type="email" id="registerEmail" placeholder="Digite seu email" autocomplete="email">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="registerUsername">Usuário</label>
+                        <input type="text" id="registerUsername" placeholder="Escolha um nome de usuário" autocomplete="username">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="registerPassword">Senha</label>
+                        <input type="password" id="registerPassword" placeholder="Crie uma senha" autocomplete="new-password">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirmar Senha</label>
+                        <input type="password" id="confirmPassword" placeholder="Confirme sua senha" autocomplete="new-password">
+                        <div class="error-message" id="registerError"></div>
+                    </div>
+                    
+                    <div class="button-container">
+                        <button id="registerButton" class="register-button">Cadastrar</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+</div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Elementos do DOM
-            const loginContainer = document.getElementById('loginContainer');
-            const reportFrame = document.getElementById('reportFrame');
-            const loadingOverlay = document.getElementById('loadingOverlay');
-            const userInfo = document.getElementById('userInfo');
-            const userName = document.getElementById('userName');
-            const loginButton = document.getElementById('loginButton');
-            const logoutButton = document.getElementById('logoutButton');
-            const usernameInput = document.getElementById('username');
-            const passwordInput = document.getElementById('password');
-            const loginError = document.getElementById('loginError');
-            const changePasswordButton = document.getElementById('changePasswordButton');
-            const changePasswordModal = document.getElementById('changePasswordModal');
-            const currentPasswordInput = document.getElementById('currentPassword');
-            const newPasswordInput = document.getElementById('newPassword');
-            const confirmNewPasswordInput = document.getElementById('confirmNewPassword');
-            const passwordError = document.getElementById('passwordError');
-            const cancelChangePassword = document.getElementById('cancelChangePassword');
-            const saveNewPassword = document.getElementById('saveNewPassword');
-            
-            // Elementos de registro
-            const loginTab = document.getElementById('loginTab');
-            const registerTab = document.getElementById('registerTab');
-            const loginContent = document.getElementById('loginContent');
-            const registerContent = document.getElementById('registerContent');
-            const registerButton = document.getElementById('registerButton');
-            const registerEmail = document.getElementById('registerEmail');
-            const registerUsername = document.getElementById('registerUsername');
-            const registerPassword = document.getElementById('registerPassword');
-            const confirmPassword = document.getElementById('confirmPassword');
-            const registerError = document.getElementById('registerError');
-            
-            // Dimensões específicas para o relatório
-            const reportWidth = 1524;
-            const reportHeight = 672;
-            
-            // URLs dos relatórios Power BI com parâmetros adicionais para melhor visualização
-            function getReportUrl(username) {
-                // Base URLs - Modificadas para usar autenticação silenciosa e parâmetros adicionais
-                const baseUrls = {
-                    'renan': 'https://app.powerbi.com/reportEmbed?reportId=1c5aabf0-005d-4b7b-90c4-3e3cd1795046&autoAuth=true&ctid=969b9d46-871c-43ee-812a-efcaf0f301af&config=eyJjbHVzdGVyVXJsIjoiaHR0cHM6Ly93YWJpLWJyYXppbC1zb3V0aC1yZWRpcmVjdC5hbmFseXNpcy53aW5kb3dzLm5ldC8ifQ%3D%3D',
-                    'bruno': 'https://app.powerbi.com/reportEmbed?reportId=96976a40-297f-4942-8453-495518d24ceb&autoAuth=true&ctid=969b9d46-871c-43ee-812a-efcaf0f301af&config=eyJjbHVzdGVyVXJsIjoiaHR0cHM6Ly93YWJpLWJyYXppbC1zb3V0aC1yZWRpcmVjdC5hbmFseXNpcy53aW5kb3dzLm5ldC8ifQ%3D%3D'
-                };
-                
-                // Obter dimensões atuais da janela
-                const windowWidth = window.innerWidth;
-                const windowHeight = window.innerHeight - 60; // Subtrair altura do cabeçalho
-                
-                // Adicionar parâmetros para melhor visualização e autenticação silenciosa
-                return baseUrls[username] + 
-                    '&filterPaneEnabled=false' + 
-                    '&navContentPaneEnabled=false' + 
-                    '&width=' + windowWidth + 
-                    '&height=' + windowHeight + 
-                    '&toolbarFit=true' +
-                    '&autoAuth=true' +                      // Habilita autenticação automática
-                    '&noSignUpCheck=true' +                 // Evita verificações de cadastro
-                    '&tokenType=embed' +                    // Usa token de incorporação
-                    '&embedUrl=true' +                      // Força URL de incorporação
-                    '&pageName=ReportSection' +             // Vai direto para a primeira seção
-                    '&zoom=100' +                           // Define o zoom para 100%
-                    '&skipBILogin=true' +                   // Pula o login do Power BI
-                    '&sessionId=' + new Date().getTime();   // Adiciona ID de sessão único para evitar cache
-            }
-            
-            // Usuários (em um ambiente real, isso estaria em um banco de dados)
-            // Aqui estamos simulando com localStorage para persistência
-            
-            // IMPORTANTE: Limpar o localStorage para garantir que os usuários sejam redefinidos
-            if (!localStorage.getItem('users')) {
-                // Definir os usuários padrão
-                const defaultUsers = {
-                    'renan': {
-                        password: '1234',
-                        email: 'renan@exemplo.com'
-                    },
-                    'bruno': {
-                        password: '1234',
-                        email: 'bruno@exemplo.com'
-                    }
-                };
-                localStorage.setItem('users', JSON.stringify(defaultUsers));
-            }
-            
-            // Para depuração - mostrar os usuários no console
-            console.log('Usuários disponíveis:', JSON.parse(localStorage.getItem('users')));
-            
-            // Verificar se já está logado
-            checkLoginStatus();
-            
-            // Função para verificar status de login
-            function checkLoginStatus() {
-                const currentUser = localStorage.getItem('currentUser');
-                if (currentUser) {
-                    // Usuário está logado
-                    showDashboard(currentUser);
+<!-- Modal de Alteração de Senha -->
+<div class="modal" id="changePasswordModal">
+    <div class="modal-content">
+        <h3 class="modal-title">Alterar Senha</h3>
+        
+        <div class="form-group">
+            <label for="currentPassword">Senha Atual</label>
+            <input type="password" id="currentPassword" placeholder="Digite sua senha atual" autocomplete="current-password">
+        </div>
+        
+        <div class="form-group">
+            <label for="newPassword">Nova Senha</label>
+            <input type="password" id="newPassword" placeholder="Digite a nova senha" autocomplete="new-password">
+        </div>
+        
+        <div class="form-group">
+            <label for="confirmNewPassword">Confirmar Nova Senha</label>
+            <input type="password" id="confirmNewPassword" placeholder="Confirme a nova senha" autocomplete="new-password">
+            <div class="error-message" id="passwordError"></div>
+        </div>
+        
+        <div class="modal-buttons">
+            <button id="cancelChangePassword" class="modal-button secondary">Cancelar</button>
+            <button id="saveNewPassword" class="modal-button primary">Salvar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Elementos do DOM
+        const loginContainer = document.getElementById('loginContainer');
+        const reportFrame = document.getElementById('reportFrame');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const userInfo = document.getElementById('userInfo');
+        const userName = document.getElementById('userName');
+        const loginButton = document.getElementById('loginButton');
+        const logoutButton = document.getElementById('logoutButton');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const loginError = document.getElementById('loginError');
+        const changePasswordButton = document.getElementById('changePasswordButton');
+        const changePasswordModal = document.getElementById('changePasswordModal');
+        const currentPasswordInput = document.getElementById('currentPassword');
+        const newPasswordInput = document.getElementById('newPassword');
+        const confirmNewPasswordInput = document.getElementById('confirmNewPassword');
+        const passwordError = document.getElementById('passwordError');
+        const cancelChangePassword = document.getElementById('cancelChangePassword');
+        const saveNewPassword = document.getElementById('saveNewPassword');
+        
+        // Elementos de registro
+        const loginTab = document.getElementById('loginTab');
+        const registerTab = document.getElementById('registerTab');
+        const loginContent = document.getElementById('loginContent');
+        const registerContent = document.getElementById('registerContent');
+        const registerButton = document.getElementById('registerButton');
+        const registerEmail = document.getElementById('registerEmail');
+        const registerUsername = document.getElementById('registerUsername');
+        const registerPassword = document.getElementById('registerPassword');
+        const confirmPassword = document.getElementById('confirmPassword');
+        const registerError = document.getElementById('registerError');
+        
+        // Dimensões específicas para o relatório
+        const reportWidth = 1524;
+        const reportHeight = 672;
+        
+        // URLs dos relatórios Power BI
+        // Agora usando a URL de incorporação direta para o usuário bruno
+        const reportUrls = {
+            'renan': 'https://app.powerbi.com/reportEmbed?reportId=1c5aabf0-005d-4b7b-90c4-3e3cd1795046&autoAuth=true&ctid=969b9d46-871c-43ee-812a-efcaf0f301af&config=eyJjbHVzdGVyVXJsIjoiaHR0cHM6Ly93YWJpLWJyYXppbC1zb3V0aC1yZWRpcmVjdC5hbmFseXNpcy53aW5kb3dzLm5ldC8ifQ%3D%3D',
+            'bruno': 'https://app.powerbi.com/view?r=eyJrIjoiNDUxZjg2ZDctMTk2YS00MDdhLTg3NTUtMmIzYTU2OTVlMTliIiwidCI6Ijk2OWI5ZDQ2LTg3MWMtNDNlZS04MTJhLWVmY2FmMGYzMDFhZiJ9'
+        };
+        
+        // Usuários (em um ambiente real, isso estaria em um banco de dados)
+        // Aqui estamos simulando com localStorage para persistência
+        if (!localStorage.getItem('users')) {
+            // Definir os usuários padrão
+            const defaultUsers = {
+                'renan': {
+                    password: '1234',
+                    email: 'renan@exemplo.com'
+                },
+                'bruno': {
+                    password: '1234',
+                    email: 'bruno@exemplo.com'
                 }
+            };
+            localStorage.setItem('users', JSON.stringify(defaultUsers));
+        }
+        
+        // Para depuração - mostrar os usuários no console
+        console.log('Usuários disponíveis:', JSON.parse(localStorage.getItem('users')));
+        
+        // Verificar se já está logado
+        checkLoginStatus();
+        
+        // Função para verificar status de login
+        function checkLoginStatus() {
+            const currentUser = localStorage.getItem('currentUser');
+            if (currentUser) {
+                // Usuário está logado
+                showDashboard(currentUser);
             }
+        }
+        
+        // Função para mostrar o dashboard
+        function showDashboard(username) {
+            userName.textContent = username;
+            userInfo.classList.remove('hidden');
+            loginContainer.classList.add('hidden');
             
-            // Função para mostrar o dashboard
-            function showDashboard(username) {
-                userName.textContent = username;
-                userInfo.classList.remove('hidden');
-                loginContainer.classList.add('hidden');
+            // Mostrar o overlay de carregamento
+            loadingOverlay.style.display = 'flex';
+            
+            // Definir o fundo do body e do contêiner como transparente
+            document.body.style.backgroundColor = 'transparent';
+            document.querySelector('.content').style.backgroundColor = 'transparent';
+            
+            // Verificar se o usuário tem um relatório configurado
+            if (reportUrls[username]) {
+                console.log(`Carregando relatório para o usuário ${username}`);
                 
-                // Mostrar o overlay de carregamento
-                loadingOverlay.style.display = 'flex';
+                // Carregar o relatório
+                reportFrame.src = reportUrls[username];
                 
-                // Definir o fundo do body e do contêiner como transparente
-                document.body.style.backgroundColor = 'transparent';
-                document.querySelector('.content').style.backgroundColor = 'transparent';
-                
-                // Carregar o relatório específico para o usuário
-                if (getReportUrl(username)) {
-                    // Obter URL dinâmica com base no tamanho atual da tela
-                    const reportUrl = getReportUrl(username);
-                    console.log('Carregando relatório com URL:', reportUrl);
+                // Adicionar um listener para quando o iframe terminar de carregar
+                reportFrame.onload = function() {
+                    console.log('Relatório carregado com sucesso');
                     
-                    // Adicionar um listener para quando o iframe terminar de carregar
-                    reportFrame.onload = function() {
-                        console.log('Iframe carregado com sucesso');
-                        
-                        // Esconder o overlay de carregamento após um pequeno atraso
-                        setTimeout(function() {
-                            loadingOverlay.style.display = 'none';
-                            
-                            // Tentar injetar script para lidar com o login do Power BI
-                            try {
-                                const iframeDoc = reportFrame.contentDocument || reportFrame.contentWindow.document;
-                                
-                                // Verificar se há um formulário de login do Power BI
-                                const loginForm = iframeDoc.querySelector('form[name="logonForm"]');
-                                if (loginForm) {
-                                    console.log('Formulário de login do Power BI detectado, tentando autenticar automaticamente...');
-                                    
-                                    // Tentar preencher automaticamente o formulário
-                                    const emailInput = iframeDoc.querySelector('input[type="email"]');
-                                    const passwordInput = iframeDoc.querySelector('input[type="password"]');
-                                    const submitButton = iframeDoc.querySelector('input[type="submit"]');
-                                    
-                                    if (emailInput && passwordInput && submitButton) {
-                                        // Preencher com credenciais (isso é apenas um exemplo, em produção você usaria credenciais seguras)
-                                        emailInput.value = 'usuario@exemplo.com';
-                                        passwordInput.value = 'senha123';
-                                        
-                                        // Simular clique no botão de login
-                                        submitButton.click();
-                                    }
-                                    
-                                    // Alternativa: tentar clicar em qualquer botão "Entrar" visível
-                                    const enterButtons = iframeDoc.querySelectorAll('button');
-                                    enterButtons.forEach(button => {
-                                        if (button.textContent.includes('Entrar')) {
-                                            console.log('Botão Entrar encontrado, clicando...');
-                                            button.click();
-                                        }
-                                    });
-                                }
-                                
-                                // Verificar se há um botão "Entrar" na página do Power BI
-                                const enterButtons = iframeDoc.querySelectorAll('button');
-                                enterButtons.forEach(button => {
-                                    if (button.textContent.includes('Entrar')) {
-                                        console.log('Botão Entrar encontrado, clicando...');
-                                        button.click();
-                                    }
-                                });
-                                
-                            } catch (e) {
-                                console.log('Não foi possível acessar o conteúdo do iframe devido a restrições de segurança:', e);
-                            }
-                        }, 2000);
-                    };
-                    
-                    // Adicionar um listener para erros de carregamento
-                    reportFrame.onerror = function() {
-                        console.error('Erro ao carregar o relatório');
+                    // Esconder o overlay de carregamento após um pequeno atraso
+                    setTimeout(function() {
                         loadingOverlay.style.display = 'none';
-                        alert('Ocorreu um erro ao carregar o relatório. Por favor, tente novamente mais tarde.');
-                    };
-                    
-                    // Carregar o relatório
-                    reportFrame.src = reportUrl;
-                    
-                    // Garantir que o iframe ocupe todo o espaço disponível
-                    adjustIframeSize();
-                    
-                } else {
-                    // Caso o usuário não tenha um relatório específico, mostrar uma mensagem
-                    reportFrame.src = 'about:blank';
-                    loadingOverlay.style.display = 'none';
-                    alert('Nenhum relatório disponível para este usuário.');
-                }
-            }
-            
-            // Função para ajustar o tamanho do iframe
-            function adjustIframeSize() {
-                const headerHeight = document.querySelector('.header').offsetHeight;
-                const windowHeight = window.innerHeight;
-                const windowWidth = window.innerWidth;
-                
-                // Definir altura e largura do iframe e seu contêiner
-                const reportContainer = document.querySelector('.report-container');
-                reportContainer.style.height = (windowHeight - headerHeight) + 'px';
-                reportContainer.style.width = '100%';
-                
-                // Forçar o iframe a ocupar 100% do espaço disponível
-                reportFrame.style.width = '100%';
-                reportFrame.style.height = '100%';
-                reportFrame.style.position = 'absolute';
-                reportFrame.style.top = '0';
-                reportFrame.style.left = '0';
-                reportFrame.style.right = '0';
-                reportFrame.style.bottom = '0';
-                reportFrame.style.border = 'none';
-                reportFrame.style.margin = '0';
-                reportFrame.style.padding = '0';
-                reportFrame.style.overflow = 'hidden';
-            }
-            
-            // Ajustar tamanho do iframe quando a janela for redimensionada
-            window.addEventListener('resize', function() {
-                if (localStorage.getItem('currentUser')) {
-                    // Pequeno atraso para garantir que o redimensionamento seja concluído
-                    setTimeout(adjustIframeSize, 100);
-                }
-            });
-            
-            // Função para fazer login
-            function login() {
-                const username = usernameInput.value.trim().toLowerCase();
-                const password = passwordInput.value;
-                
-                if (!username || !password) {
-                    showLoginError('Preencha todos os campos.');
-                    return;
-                }
-                
-                // Para depuração - mostrar tentativa de login
-                console.log('Tentativa de login:', username, password);
-                
-                const users = JSON.parse(localStorage.getItem('users'));
-                console.log('Usuários disponíveis durante login:', users);
-                
-                if (users[username] && users[username].password === password) {
-                    // Login bem-sucedido
-                    console.log('Login bem-sucedido para:', username);
-                    localStorage.setItem('currentUser', username);
-                    showDashboard(username);
-                    clearLoginForm();
-                } else {
-                    // Login falhou
-                    console.log('Login falhou para:', username);
-                    showLoginError('Usuário ou senha incorretos. Tente novamente.');
-                }
-            }
-            
-            // Função para registrar novo usuário
-            function register() {
-                const email = registerEmail.value.trim();
-                const username = registerUsername.value.trim().toLowerCase();
-                const password = registerPassword.value;
-                const confirmPwd = confirmPassword.value;
-                
-                // Validações
-                if (!email || !username || !password || !confirmPwd) {
-                    showRegisterError('Preencha todos os campos.');
-                    return;
-                }
-                
-                if (!isValidEmail(email)) {
-                    showRegisterError('Email inválido.');
-                    return;
-                }
-                
-                if (password !== confirmPwd) {
-                    showRegisterError('As senhas não coincidem.');
-                    return;
-                }
-                
-                if (password.length < 4) {
-                    showRegisterError('A senha deve ter pelo menos 4 caracteres.');
-                    return;
-                }
-                
-                // Verificar se o usuário já existe
-                const users = JSON.parse(localStorage.getItem('users'));
-                if (users[username]) {
-                    showRegisterError('Este nome de usuário já está em uso.');
-                    return;
-                }
-                
-                // Adicionar novo usuário
-                users[username] = {
-                    password: password,
-                    email: email
+                    }, 1000);
                 };
                 
-                localStorage.setItem('users', JSON.stringify(users));
-                console.log('Novo usuário registrado:', username);
+                // Adicionar um listener para erros de carregamento
+                reportFrame.onerror = function() {
+                    console.error('Erro ao carregar o relatório');
+                    loadingOverlay.style.display = 'none';
+                    alert('Ocorreu um erro ao carregar o relatório. Por favor, tente novamente mais tarde.');
+                };
                 
-                // Limpar formulário e mostrar mensagem de sucesso
-                clearRegisterForm();
-                alert('Cadastro realizado com sucesso! Faça login para continuar.');
+                // Garantir que o iframe ocupe todo o espaço disponível
+                adjustIframeSize();
                 
-                // Mudar para a aba de login
-                switchTab('login');
-            }
-            
-            // Função para validar email
-            function isValidEmail(email) {
-                const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                return re.test(email);
-            }
-            
-            // Função para mostrar erro de login
-            function showLoginError(message) {
-                loginError.textContent = message;
-                loginError.classList.add('visible');
-            }
-            
-            // Função para mostrar erro de registro
-            function showRegisterError(message) {
-                registerError.textContent = message;
-                registerError.classList.add('visible');
-            }
-            
-            // Função para limpar formulário de login
-            function clearLoginForm() {
-                usernameInput.value = '';
-                passwordInput.value = '';
-                loginError.classList.remove('visible');
-            }
-            
-            // Função para limpar formulário de registro
-            function clearRegisterForm() {
-                registerEmail.value = '';
-                registerUsername.value = '';
-                registerPassword.value = '';
-                confirmPassword.value = '';
-                registerError.classList.remove('visible');
-            }
-            
-            // Função para alternar entre abas
-            function switchTab(tab) {
-                if (tab === 'login') {
-                    loginTab.classList.add('active');
-                    registerTab.classList.remove('active');
-                    loginContent.classList.add('active');
-                    registerContent.classList.remove('active');
-                } else {
-                    loginTab.classList.remove('active');
-                    registerTab.classList.add('active');
-                    loginContent.classList.remove('active');
-                    registerContent.classList.add('active');
-                }
-            }
-            
-            // Função para fazer logout
-            function logout() {
-                localStorage.removeItem('currentUser');
-                userInfo.classList.add('hidden');
-                loginContainer.classList.remove('hidden');
+            } else {
+                // Caso o usuário não tenha um relatório específico, mostrar uma mensagem
                 reportFrame.src = 'about:blank';
                 loadingOverlay.style.display = 'none';
-                clearLoginForm();
-                clearRegisterForm();
-                switchTab('login');
+                alert('Nenhum relatório disponível para este usuário.');
             }
+        }
+        
+        // Função para ajustar o tamanho do iframe
+        function adjustIframeSize() {
+            const headerHeight = document.querySelector('.header').offsetHeight;
+            const windowHeight = window.innerHeight;
+            const windowWidth = window.innerWidth;
             
-            // Função para abrir modal de alteração de senha
-            function openChangePasswordModal() {
-                currentPasswordInput.value = '';
-                newPasswordInput.value = '';
-                confirmNewPasswordInput.value = '';
-                passwordError.classList.remove('visible');
-                passwordError.textContent = '';
-                changePasswordModal.classList.add('visible');
+            // Definir altura e largura do iframe e seu contêiner
+            const reportContainer = document.querySelector('.report-container');
+            reportContainer.style.height = (windowHeight - headerHeight) + 'px';
+            reportContainer.style.width = '100%';
+            
+            // Forçar o iframe a ocupar 100% do espaço disponível
+            reportFrame.style.width = '100%';
+            reportFrame.style.height = '100%';
+            reportFrame.style.position = 'absolute';
+            reportFrame.style.top = '0';
+            reportFrame.style.left = '0';
+            reportFrame.style.right = '0';
+            reportFrame.style.bottom = '0';
+            reportFrame.style.border = 'none';
+            reportFrame.style.margin = '0';
+            reportFrame.style.padding = '0';
+            reportFrame.style.overflow = 'hidden';
+        }
+        
+        // Ajustar tamanho do iframe quando a janela for redimensionada
+        window.addEventListener('resize', function() {
+            if (localStorage.getItem('currentUser')) {
+                // Pequeno atraso para garantir que o redimensionamento seja concluído
+                setTimeout(adjustIframeSize, 100);
             }
-            
-            // Função para fechar modal de alteração de senha
-            function closeChangePasswordModal() {
-                changePasswordModal.classList.remove('visible');
-            }
-            
-            // Função para alterar senha
-            function changePassword() {
-                const currentUser = localStorage.getItem('currentUser');
-                const users = JSON.parse(localStorage.getItem('users'));
-                const currentPassword = currentPasswordInput.value;
-                const newPassword = newPasswordInput.value;
-                const confirmPassword = confirmNewPasswordInput.value;
-                
-                // Verificar senha atual
-                if (users[currentUser].password !== currentPassword) {
-                    showPasswordError('Senha atual incorreta.');
-                    return;
-                }
-                
-                // Verificar se as novas senhas coincidem
-                if (newPassword !== confirmPassword) {
-                    showPasswordError('As senhas não coincidem.');
-                    return;
-                }
-                
-                // Verificar se a nova senha tem pelo menos 4 caracteres
-                if (newPassword.length < 4) {
-                    showPasswordError('A nova senha deve ter pelo menos 4 caracteres.');
-                    return;
-                }
-                
-                // Atualizar senha
-                users[currentUser].password = newPassword;
-                localStorage.setItem('users', JSON.stringify(users));
-                
-                // Fechar modal
-                closeChangePasswordModal();
-                
-                // Mostrar confirmação
-                alert('Senha alterada com sucesso!');
-            }
-            
-            // Função para mostrar erro de senha
-            function showPasswordError(message) {
-                passwordError.textContent = message;
-                passwordError.classList.add('visible');
-            }
-            
-            // Função para lidar com mensagens do iframe
-            window.addEventListener('message', function(event) {
-                // Verificar se a mensagem é do Power BI
-                if (event.data && event.data.type === 'powerbi-login') {
-                    console.log('Recebida mensagem de login do Power BI');
-                    // Aqui você poderia implementar lógica para lidar com o login do Power BI
-                }
-            });
-            
-            // Event Listeners
-            loginButton.addEventListener('click', login);
-            registerButton.addEventListener('click', register);
-            
-            // Permitir login com Enter
-            passwordInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    login();
-                }
-            });
-            
-            // Permitir registro com Enter
-            confirmPassword.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    register();
-                }
-            });
-            
-            // Alternar entre abas
-            loginTab.addEventListener('click', function() {
-                switchTab('login');
-            });
-            
-            registerTab.addEventListener('click', function() {
-                switchTab('register');
-            });
-            
-            logoutButton.addEventListener('click', logout);
-            changePasswordButton.addEventListener('click', openChangePasswordModal);
-            cancelChangePassword.addEventListener('click', closeChangePasswordModal);
-            saveNewPassword.addEventListener('click', changePassword);
-            
-            // Fechar modal ao clicar fora dele
-            changePasswordModal.addEventListener('click', function(e) {
-                if (e.target === changePasswordModal) {
-                    closeChangePasswordModal();
-                }
-            });
-            
-            // Prevenir zoom em dispositivos móveis ao focar nos inputs
-            document.addEventListener('gesturestart', function(e) {
-                e.preventDefault();
-            });
-            
-            // Verificar se o iframe está carregado corretamente e automatizar o clique no botão "Entrar"
-            reportFrame.addEventListener('load', function() {
-                console.log('Iframe carregado com sucesso');
-                
-                // Tentar automatizar o clique no botão "Entrar" do Power BI
-                setTimeout(function() {
-                    try {
-                        // Tentar acessar o documento do iframe
-                        const iframeDoc = reportFrame.contentDocument || reportFrame.contentWindow.document;
-                        
-                        // Procurar por botões com texto "Entrar"
-                        const buttons = iframeDoc.querySelectorAll('button');
-                        buttons.forEach(function(button) {
-                            if (button.textContent.includes('Entrar')) {
-                                console.log('Botão Entrar encontrado, clicando automaticamente...');
-                                button.click();
-                            }
-                        });
-                        
-                        // Procurar por elementos com classe que contenha "enter" ou "login"
-                        const enterElements = iframeDoc.querySelectorAll('[class*="enter"], [class*="login"], [id*="enter"], [id*="login"]');
-                        enterElements.forEach(function(element) {
-                            console.log('Elemento de login encontrado, clicando...');
-                            element.click();
-                        });
-                        
-                    } catch (e) {
-                        console.log('Não foi possível acessar o conteúdo do iframe devido a restrições de segurança:', e);
-                    }
-                }, 1500);
-            });
         });
-    </script>
+        
+        // Função para fazer login
+        function login() {
+            const username = usernameInput.value.trim().toLowerCase();
+            const password = passwordInput.value;
+            
+            if (!username || !password) {
+                showLoginError('Preencha todos os campos.');
+                return;
+            }
+            
+            // Para depuração - mostrar tentativa de login
+            console.log('Tentativa de login:', username, password);
+            
+            const users = JSON.parse(localStorage.getItem('users'));
+            console.log('Usuários disponíveis durante login:', users);
+            
+            if (users[username] && users[username].password === password) {
+                // Login bem-sucedido
+                console.log('Login bem-sucedido para:', username);
+                localStorage.setItem('currentUser', username);
+                showDashboard(username);
+                clearLoginForm();
+            } else {
+                // Login falhou
+                console.log('Login falhou para:', username);
+                showLoginError('Usuário ou senha incorretos. Tente novamente.');
+            }
+        }
+        
+        // Função para registrar novo usuário
+        function register() {
+            const email = registerEmail.value.trim();
+            const username = registerUsername.value.trim().toLowerCase();
+            const password = registerPassword.value;
+            const confirmPwd = confirmPassword.value;
+            
+            // Validações
+            if (!email || !username || !password || !confirmPwd) {
+                showRegisterError('Preencha todos os campos.');
+                return;
+            }
+            
+            if (!isValidEmail(email)) {
+                showRegisterError('Email inválido.');
+                return;
+            }
+            
+            if (password !== confirmPwd) {
+                showRegisterError('As senhas não coincidem.');
+                return;
+            }
+            
+            if (password.length < 4) {
+                showRegisterError('A senha deve ter pelo menos 4 caracteres.');
+                return;
+            }
+            
+            // Verificar se o usuário já existe
+            const users = JSON.parse(localStorage.getItem('users'));
+            if (users[username]) {
+                showRegisterError('Este nome de usuário já está em uso.');
+                return;
+            }
+            
+            // Adicionar novo usuário
+            users[username] = {
+                password: password,
+                email: email
+            };
+            
+            localStorage.setItem('users', JSON.stringify(users));
+            console.log('Novo usuário registrado:', username);
+            
+            // Limpar formulário e mostrar mensagem de sucesso
+            clearRegisterForm();
+            alert('Cadastro realizado com sucesso! Faça login para continuar.');
+            
+            // Mudar para a aba de login
+            switchTab('login');
+        }
+        
+        // Função para validar email
+        function isValidEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+        
+        // Função para mostrar erro de login
+        function showLoginError(message) {
+            loginError.textContent = message;
+            loginError.classList.add('visible');
+        }
+        
+        // Função para mostrar erro de registro
+        function showRegisterError(message) {
+            registerError.textContent = message;
+            registerError.classList.add('visible');
+        }
+        
+        // Função para limpar formulário de login
+        function clearLoginForm() {
+            usernameInput.value = '';
+            passwordInput.value = '';
+            loginError.classList.remove('visible');
+        }
+        
+        // Função para limpar formulário de registro
+        function clearRegisterForm() {
+            registerEmail.value = '';
+            registerUsername.value = '';
+            registerPassword.value = '';
+            confirmPassword.value = '';
+            registerError.classList.remove('visible');
+        }
+        
+        // Função para alternar entre abas
+        function switchTab(tab) {
+            if (tab === 'login') {
+                loginTab.classList.add('active');
+                registerTab.classList.remove('active');
+                loginContent.classList.add('active');
+                registerContent.classList.remove('active');
+            } else {
+                loginTab.classList.remove('active');
+                registerTab.classList.add('active');
+                loginContent.classList.remove('active');
+                registerContent.classList.add('active');
+            }
+        }
+        
+        // Função para fazer logout
+        function logout() {
+            localStorage.removeItem('currentUser');
+            userInfo.classList.add('hidden');
+            loginContainer.classList.remove('hidden');
+            reportFrame.src = 'about:blank';
+            loadingOverlay.style.display = 'none';
+            clearLoginForm();
+            clearRegisterForm();
+            switchTab('login');
+        }
+        
+        // Função para abrir modal de alteração de senha
+        function openChangePasswordModal() {
+            currentPasswordInput.value = '';
+            newPasswordInput.value = '';
+            confirmNewPasswordInput.value = '';
+            passwordError.classList.remove('visible');
+            passwordError.textContent = '';
+            changePasswordModal.classList.add('visible');
+        }
+        
+        // Função para fechar modal de alteração de senha
+        function closeChangePasswordModal() {
+            changePasswordModal.classList.remove('visible');
+        }
+        
+        // Função para alterar senha
+        function changePassword() {
+            const currentUser = localStorage.getItem('currentUser');
+            const users = JSON.parse(localStorage.getItem('users'));
+            const currentPassword = currentPasswordInput.value;
+            const newPassword = newPasswordInput.value;
+            const confirmPassword = confirmNewPasswordInput.value;
+            
+            // Verificar senha atual
+            if (users[currentUser].password !== currentPassword) {
+                showPasswordError('Senha atual incorreta.');
+                return;
+            }
+            
+            // Verificar se as novas senhas coincidem
+            if (newPassword !== confirmPassword) {
+                showPasswordError('As senhas não coincidem.');
+                return;
+            }
+            
+            // Verificar se a nova senha tem pelo menos 4 caracteres
+            if (newPassword.length < 4) {
+                showPasswordError('A nova senha deve ter pelo menos 4 caracteres.');
+                return;
+            }
+            
+            // Atualizar senha
+            users[currentUser].password = newPassword;
+            localStorage.setItem('users', JSON.stringify(users));
+            
+            // Fechar modal
+            closeChangePasswordModal();
+            
+            // Mostrar confirmação
+            alert('Senha alterada com sucesso!');
+        }
+        
+        // Função para mostrar erro de senha
+        function showPasswordError(message) {
+            passwordError.textContent = message;
+            passwordError.classList.add('visible');
+        }
+        
+        // Event Listeners
+        loginButton.addEventListener('click', login);
+        registerButton.addEventListener('click', register);
+        
+        // Permitir login com Enter
+        passwordInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                login();
+            }
+        });
+        
+        // Permitir registro com Enter
+        confirmPassword.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                register();
+            }
+        });
+        
+        // Alternar entre abas
+        loginTab.addEventListener('click', function() {
+            switchTab('login');
+        });
+        
+        registerTab.addEventListener('click', function() {
+            switchTab('register');
+        });
+        
+        logoutButton.addEventListener('click', logout);
+        changePasswordButton.addEventListener('click', openChangePasswordModal);
+        cancelChangePassword.addEventListener('click', closeChangePasswordModal);
+        saveNewPassword.addEventListener('click', changePassword);
+        
+        // Fechar modal ao clicar fora dele
+        changePasswordModal.addEventListener('click', function(e) {
+            if (e.target === changePasswordModal) {
+                closeChangePasswordModal();
+            }
+        });
+        
+        // Prevenir zoom em dispositivos móveis ao focar nos inputs
+        document.addEventListener('gesturestart', function(e) {
+            e.preventDefault();
+        });
+    });
+</script>
 </body>
 </html>
