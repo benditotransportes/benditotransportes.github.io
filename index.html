@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Relatório Power BI - Transportes</title>
 <style>
+/* Estilos anteriores mantidos... */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -83,7 +84,7 @@ html, body {
     display: flex;
     align-items: center;
     gap: 4px;
-    transition: background-color 0.2s;
+    transition: all 0.2s ease;
     font-size: 14px;
 }
 
@@ -105,6 +106,7 @@ html, body {
     background-color: rgba(255, 255, 255, 0.4);
     color: #1e5631;
     font-weight: 600;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .button svg {
@@ -116,6 +118,25 @@ html, body {
     display: flex;
     gap: 4px;
     margin-right: 12px;
+    position: relative;
+}
+
+.view-toggle::after {
+    content: 'Auto-detectado';
+    position: absolute;
+    bottom: -18px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.8);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.view-toggle.auto-detected::after {
+    opacity: 1;
 }
 
 .content {
@@ -507,8 +528,8 @@ input:focus {
         <div class="title">Relatório Power BI - Transportes</div>
     </div>
     <div class="user-info hidden" id="userInfo">
-        <div class="view-toggle">
-            <button id="desktopViewButton" class="button active">Desktop</button>
+        <div class="view-toggle" id="viewToggle">
+            <button id="desktopViewButton" class="button">Desktop</button>
             <button id="mobileViewButton" class="button">Celular</button>
         </div>
         <span class="user-name" id="userName">Usuário</span>
@@ -652,6 +673,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const registerError = document.getElementById('registerError');
     
     // Elementos de alternância de visualização
+    const viewToggle = document.getElementById('viewToggle');
     const desktopViewButton = document.getElementById('desktopViewButton');
     const mobileViewButton = document.getElementById('mobileViewButton');
     
@@ -686,7 +708,25 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Detectar tipo de dispositivo e definir visualização padrão
     function detectDeviceType() {
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+        // Verificar se é um dispositivo móvel usando User Agent
+        const mobileUserAgent = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        // Verificar se a tela é pequena (típico de dispositivos móveis)
+        const smallScreen = window.innerWidth <= 768;
+        
+        // Verificar se tem recursos de toque (típico de dispositivos móveis)
+        const touchEnabled = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        
+        // Combinar os fatores para uma detecção mais precisa
+        const isMobile = mobileUserAgent || (smallScreen && touchEnabled);
+        
+        console.log('Detecção de dispositivo:', {
+            mobileUserAgent,
+            smallScreen,
+            touchEnabled,
+            resultado: isMobile ? 'mobile' : 'desktop'
+        });
+        
         return isMobile ? 'mobile' : 'desktop';
     }
     
@@ -698,19 +738,36 @@ document.addEventListener('DOMContentLoaded', function() {
         // Usar preferência salva ou detectar automaticamente
         const viewMode = savedViewMode || deviceType;
         
+        console.log('Modo de visualização inicial:', viewMode, savedViewMode ? '(preferência salva)' : '(auto-detectado)');
+        
         if (viewMode === 'mobile') {
-            setMobileView();
+            setMobileView(savedViewMode ? false : true);
         } else {
-            setDesktopView();
+            setDesktopView(savedViewMode ? false : true);
+        }
+        
+        // Mostrar indicador de auto-detecção se não houver preferência salva
+        if (!savedViewMode) {
+            viewToggle.classList.add('auto-detected');
+            
+            // Remover o indicador após 5 segundos
+            setTimeout(() => {
+                viewToggle.classList.remove('auto-detected');
+            }, 5000);
         }
     }
     
     // Função para definir visualização desktop
-    function setDesktopView() {
+    function setDesktopView(isAutoDetected = false) {
         reportContainer.classList.remove('mobile-view');
         desktopViewButton.classList.add('active');
         mobileViewButton.classList.remove('active');
-        localStorage.setItem('viewMode', 'desktop');
+        
+        // Salvar preferência apenas se não for auto-detectado
+        if (!isAutoDetected) {
+            localStorage.setItem('viewMode', 'desktop');
+            viewToggle.classList.remove('auto-detected');
+        }
         
         // Recarregar o relatório para ajustar à nova visualização
         const currentUser = localStorage.getItem('currentUser');
@@ -720,11 +777,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Função para definir visualização mobile
-    function setMobileView() {
+    function setMobileView(isAutoDetected = false) {
         reportContainer.classList.add('mobile-view');
         desktopViewButton.classList.remove('active');
         mobileViewButton.classList.add('active');
-        localStorage.setItem('viewMode', 'mobile');
+        
+        // Salvar preferência apenas se não for auto-detectado
+        if (!isAutoDetected) {
+            localStorage.setItem('viewMode', 'mobile');
+            viewToggle.classList.remove('auto-detected');
+        }
         
         // Recarregar o relatório para ajustar à nova visualização
         const currentUser = localStorage.getItem('currentUser');
@@ -1001,6 +1063,30 @@ document.addEventListener('DOMContentLoaded', function() {
         passwordError.classList.add('visible');
     }
     
+    // Monitorar mudanças na orientação e tamanho da tela
+    window.addEventListener('resize', function() {
+        // Se não houver preferência salva, ajustar automaticamente
+        if (!localStorage.getItem('viewMode')) {
+            const deviceType = detectDeviceType();
+            
+            if (deviceType === 'mobile' && !reportContainer.classList.contains('mobile-view')) {
+                setMobileView(true);
+                viewToggle.classList.add('auto-detected');
+                
+                setTimeout(() => {
+                    viewToggle.classList.remove('auto-detected');
+                }, 3000);
+            } else if (deviceType === 'desktop' && reportContainer.classList.contains('mobile-view')) {
+                setDesktopView(true);
+                viewToggle.classList.add('auto-detected');
+                
+                setTimeout(() => {
+                    viewToggle.classList.remove('auto-detected');
+                }, 3000);
+            }
+        }
+    });
+    
     // Event Listeners
     loginButton.addEventListener('click', login);
     registerButton.addEventListener('click', register);
@@ -1029,8 +1115,13 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Alternar entre visualizações
-    desktopViewButton.addEventListener('click', setDesktopView);
-    mobileViewButton.addEventListener('click', setMobileView);
+    desktopViewButton.addEventListener('click', function() {
+        setDesktopView();
+    });
+    
+    mobileViewButton.addEventListener('click', function() {
+        setMobileView();
+    });
     
     logoutButton.addEventListener('click', logout);
     changePasswordButton.addEventListener('click', openChangePasswordModal);
