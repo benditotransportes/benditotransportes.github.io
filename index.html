@@ -12,19 +12,20 @@
     -webkit-tap-highlight-color: transparent;
 }
 
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: transparent;
-    height: 100vh;
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
     overflow: hidden;
-    width: 100vw;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .container {
     display: flex;
     flex-direction: column;
     height: 100vh;
-    width: 100vw;
+    width: 100%;
     overflow: hidden;
 }
 
@@ -37,7 +38,7 @@ body {
     align-items: center;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     z-index: 10;
-    height: 60px; /* Altura aumentada para o cabeçalho */
+    height: 60px;
 }
 
 .logo-container {
@@ -106,25 +107,25 @@ body {
 }
 
 .content {
-    flex-grow: 1;
-    display: flex;
+    flex: 1;
+    height: calc(100vh - 60px);
     position: relative;
-    height: calc(100vh - 60px); /* Altura total menos a altura do header */
-    overflow: hidden;
-    background-color: transparent; /* Fundo transparente para o conteúdo */
-    width: 100%;
 }
 
 .report-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
     width: 100%;
     height: 100%;
     overflow: hidden;
-    background-color: transparent;
+    position: relative;
+}
+
+.report-container iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    position: absolute;
+    top: 0;
+    left: 0;
 }
 
 /* Estilos para o overlay de carregamento */
@@ -152,19 +153,6 @@ body {
 
 @keyframes spin {
     to { transform: rotate(360deg); }
-}
-
-iframe {
-    width: 100%;
-    height: 100%;
-    border: none;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: transparent; /* Fundo transparente para o iframe */
-    overflow: hidden;
 }
 
 .login-container {
@@ -488,7 +476,7 @@ input:focus {
         <div id="loadingOverlay" class="loading-overlay">
             <div class="spinner"></div>
         </div>
-        <iframe id="reportFrame" src="about:blank" allowFullScreen="true" style="border:0; display:block; width:100%; height:100%; background-color:transparent;"></iframe>
+        <iframe id="reportFrame" src="about:blank" allowFullScreen="true"></iframe>
     </div>
     
     <div class="login-container" id="loginContainer">
@@ -612,7 +600,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const confirmPassword = document.getElementById('confirmPassword');
     const registerError = document.getElementById('registerError');
     
-    // URLs dos relatórios Power BI
+    // URLs dos relatórios Power BI - URLs estáticas sem modificações
     const reportUrls = {
         'renan': 'https://app.powerbi.com/reportEmbed?reportId=1c5aabf0-005d-4b7b-90c4-3e3cd1795046&autoAuth=true&ctid=969b9d46-871c-43ee-812a-efcaf0f301af&config=eyJjbHVzdGVyVXJsIjoiaHR0cHM6Ly93YWJpLWJyYXppbC1zb3V0aC1yZWRpcmVjdC5hbmFseXNpcy53aW5kb3dzLm5ldC8ifQ%3D%3D',
         'bruno': 'https://app.powerbi.com/view?r=eyJrIjoiNDUxZjg2ZDctMTk2YS00MDdhLTg3NTUtMmIzYTU2OTVlMTliIiwidCI6Ijk2OWI5ZDQ2LTg3MWMtNDNlZS04MTJhLWVmY2FmMGYzMDFhZiJ9'
@@ -674,9 +662,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 setTimeout(function() {
                     loadingOverlay.style.display = 'none';
                 }, 1000);
-                
-                // Ajustar o tamanho do iframe
-                adjustIframeSize();
             };
         } else {
             // Caso o usuário não tenha um relatório específico, mostrar uma mensagem
@@ -685,25 +670,6 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Nenhum relatório disponível para este usuário.');
         }
     }
-    
-    // Função para ajustar o tamanho do iframe
-    function adjustIframeSize() {
-        const headerHeight = document.querySelector('.header').offsetHeight;
-        const windowHeight = window.innerHeight;
-        
-        // Definir altura do contêiner do relatório
-        const reportContainer = document.querySelector('.report-container');
-        reportContainer.style.height = (windowHeight - headerHeight) + 'px';
-        
-        // Garantir que o iframe ocupe todo o espaço disponível
-        reportFrame.style.width = '100%';
-        reportFrame.style.height = '100%';
-    }
-    
-    // Ajustar tamanho do iframe quando a janela for redimensionada
-    window.addEventListener('resize', function() {
-        adjustIframeSize();
-    });
     
     // Função para fazer login
     function login() {
@@ -908,7 +874,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Event Listeners
     loginButton.addEventListener('click', login);
     registerButton.addEventListener('click', register);
-    
     
     // Permitir login com Enter
     passwordInput.addEventListener('keypress', function(e) {
