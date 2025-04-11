@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Relatório Power BI - Transportes</title>
 <style>
-/* Estilos anteriores mantidos... */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -211,7 +210,7 @@ html, body {
     to { transform: rotate(360deg); }
 }
 
-.login-container {
+.login-container, .code-container {
     position: absolute;
     top: 0;
     left: 0;
@@ -225,7 +224,7 @@ html, body {
     padding: 16px;
 }
 
-.login-box {
+.login-box, .code-box {
     background-color: white;
     border-radius: 8px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.2);
@@ -234,7 +233,7 @@ html, body {
     max-width: 400px;
 }
 
-.login-title {
+.login-title, .code-title {
     color: #1e5631;
     margin-bottom: 20px;
     font-size: 22px;
@@ -285,7 +284,7 @@ input:focus {
     margin-top: 24px;
 }
 
-.login-button {
+.login-button, .code-button {
     background: linear-gradient(to right, #1e5631, #2e7d32);
     color: white;
     border: none;
@@ -299,7 +298,7 @@ input:focus {
     -webkit-appearance: none;
 }
 
-.login-button:hover {
+.login-button:hover, .code-button:hover {
     background: linear-gradient(to right, #184a29, #256e29);
     transform: translateY(-1px);
 }
@@ -451,6 +450,51 @@ input:focus {
     display: block;
 }
 
+.view-selection {
+    display: flex;
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.view-option {
+    flex: 1;
+    background-color: #f5f5f5;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.view-option:hover {
+    border-color: #8bc34a;
+    background-color: #f9f9f9;
+    transform: translateY(-2px);
+}
+
+.view-option.selected {
+    border-color: #1e5631;
+    background-color: rgba(139, 195, 74, 0.1);
+}
+
+.view-option-icon {
+    font-size: 32px;
+    margin-bottom: 12px;
+    color: #1e5631;
+}
+
+.view-option-title {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.view-option-desc {
+    font-size: 13px;
+    color: #666;
+}
+
 /* Estilos específicos para mobile */
 @media (max-width: 480px) {
     .header {
@@ -474,11 +518,11 @@ input:focus {
         max-width: 80px;
     }
     
-    .login-box, .modal-content {
+    .login-box, .modal-content, .code-box {
         padding: 20px 16px;
     }
     
-    .login-title {
+    .login-title, .code-title {
         font-size: 20px;
         margin-bottom: 16px;
     }
@@ -488,7 +532,7 @@ input:focus {
         font-size: 16px;
     }
     
-    .login-button, .modal-button, .register-button {
+    .login-button, .modal-button, .register-button, .code-button {
         padding: 12px 16px;
     }
     
@@ -516,6 +560,10 @@ input:focus {
     
     .report-container.mobile-view {
         width: 100%; /* Em dispositivos móveis, a visualização mobile ocupa 100% da largura */
+    }
+    
+    .view-selection {
+        flex-direction: column;
     }
 }
 </style>
@@ -550,6 +598,38 @@ input:focus {
         <iframe id="reportFrame" src="about:blank" allowFullScreen="true"></iframe>
     </div>
     
+    <!-- Tela de código de acesso -->
+    <div class="code-container" id="codeContainer">
+        <div class="code-box">
+            <h2 class="code-title">Selecione o Modo de Visualização</h2>
+            
+            <div class="view-selection">
+                <div class="view-option" id="desktopOption">
+                    <div class="view-option-icon">💻</div>
+                    <div class="view-option-title">Desktop</div>
+                    <div class="view-option-desc">Visualização completa para monitores</div>
+                </div>
+                
+                <div class="view-option" id="mobileOption">
+                    <div class="view-option-icon">📱</div>
+                    <div class="view-option-title">Celular</div>
+                    <div class="view-option-desc">Otimizado para dispositivos móveis</div>
+                </div>
+            </div>
+            
+            <div class="form-group" style="margin-top: 20px;">
+                <label for="accessCode">Código de Acesso</label>
+                <input type="password" id="accessCode" placeholder="Digite o código de acesso">
+                <div class="error-message" id="codeError">Código inválido. Tente novamente.</div>
+            </div>
+            
+            <div class="button-container">
+                <button id="accessButton" class="code-button">Acessar Relatório</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tela de login -->
     <div class="login-container" id="loginContainer">
         <div class="login-box">
             <div class="tabs">
@@ -641,6 +721,7 @@ input:focus {
 document.addEventListener('DOMContentLoaded', function() {
     // Elementos do DOM
     const loginContainer = document.getElementById('loginContainer');
+    const codeContainer = document.getElementById('codeContainer');
     const reportFrame = document.getElementById('reportFrame');
     const reportContainer = document.getElementById('reportContainer');
     const loadingOverlay = document.getElementById('loadingOverlay');
@@ -672,15 +753,38 @@ document.addEventListener('DOMContentLoaded', function() {
     const confirmPassword = document.getElementById('confirmPassword');
     const registerError = document.getElementById('registerError');
     
+    // Elementos de código de acesso
+    const accessCode = document.getElementById('accessCode');
+    const accessButton = document.getElementById('accessButton');
+    const codeError = document.getElementById('codeError');
+    const desktopOption = document.getElementById('desktopOption');
+    const mobileOption = document.getElementById('mobileOption');
+    
     // Elementos de alternância de visualização
     const viewToggle = document.getElementById('viewToggle');
     const desktopViewButton = document.getElementById('desktopViewButton');
     const mobileViewButton = document.getElementById('mobileViewButton');
     
-    // URLs dos relatórios Power BI - URLs estáticas sem modificações
-    const reportUrls = {
-        'renan': 'https://app.powerbi.com/reportEmbed?reportId=1c5aabf0-005d-4b7b-90c4-3e3cd1795046&autoAuth=true&ctid=969b9d46-871c-43ee-812a-efcaf0f301af&config=eyJjbHVzdGVyVXJsIjoiaHR0cHM6Ly93YWJpLWJyYXppbC1zb3V0aC1yZWRpcmVjdC5hbmFseXNpcy53aW5kb3dzLm5ldC8ifQ%3D%3D',
-        'bruno': 'https://app.powerbi.com/view?r=eyJrIjoiNDUxZjg2ZDctMTk2YS00MDdhLTg3NTUtMmIzYTU2OTVlMTliIiwidCI6Ijk2OWI5ZDQ2LTg3MWMtNDNlZS04MTJhLWVmY2FmMGYzMDFhZiJ9'
+    // Variáveis para controle de visualização
+    let selectedViewMode = 'desktop'; // Padrão: desktop
+    
+    // URLs dos relatórios Power BI com códigos de acesso
+    const reportCodes = {
+        '2121': {
+            name: 'Power bi Bendito',
+            url: 'https://app.powerbi.com/view?r=eyJrIjoiOTU3NTc1YTUtMWJjMS00OTE1LWFjMGMtMzhkZjU4ODdhZWFhIiwidCI6Ijk2OWI5ZDQ2LTg3MWMtNDNlZS04MTJhLWVmY2FmMGYzMDFhZiJ9',
+            type: 'desktop'
+        },
+        '2511': {
+            name: 'Power bi Bendito - operacional',
+            url: 'https://app.powerbi.com/view?r=eyJrIjoiNDUxZjg2ZDctMTk2YS00MDdhLTg3NTUtMmIzYTU2OTVlMTliIiwidCI6Ijk2OWI5ZDQ2LTg3MWMtNDNlZS04MTJhLWVmY2FmMGYzMDFhZiJ9',
+            type: 'desktop'
+        },
+        '3636': {
+            name: 'Power bi Bendito - versão celular',
+            url: 'https://app.powerbi.com/view?r=eyJrIjoiYzA1MDI4ZDItNzMyYi00OTZkLWJkMzAtMzg1MDczZGFkNmEzIiwidCI6Ijk2OWI5ZDQ2LTg3MWMtNDNlZS04MTJhLWVmY2FmMGYzMDFhZiJ9',
+            type: 'mobile'
+        }
     };
     
     // Usuários (em um ambiente real, isso estaria em um banco de dados)
@@ -730,6 +834,90 @@ document.addEventListener('DOMContentLoaded', function() {
         return isMobile ? 'mobile' : 'desktop';
     }
     
+    // Função para selecionar opção de visualização
+    function selectViewOption(option) {
+        // Remover seleção anterior
+        desktopOption.classList.remove('selected');
+        mobileOption.classList.remove('selected');
+        
+        // Adicionar seleção à opção escolhida
+        if (option === 'desktop') {
+            desktopOption.classList.add('selected');
+            selectedViewMode = 'desktop';
+        } else {
+            mobileOption.classList.add('selected');
+            selectedViewMode = 'mobile';
+        }
+    }
+    
+    // Função para verificar código de acesso
+    function checkAccessCode() {
+        const code = accessCode.value.trim();
+        
+        if (!code) {
+            showCodeError('Por favor, digite o código de acesso.');
+            return;
+        }
+        
+        if (reportCodes[code]) {
+            // Código válido
+            const reportInfo = reportCodes[code];
+            
+            // Salvar o código para uso posterior
+            localStorage.setItem('currentReportCode', code);
+            
+            // Verificar se o tipo de relatório corresponde à visualização selecionada
+            if (reportInfo.type !== selectedViewMode) {
+                // Ajustar a visualização para corresponder ao tipo de relatório
+                selectedViewMode = reportInfo.type;
+            }
+            
+            // Configurar a visualização
+            if (selectedViewMode === 'mobile') {
+                setMobileView();
+            } else {
+                setDesktopView();
+            }
+            
+            // Carregar o relatório
+            loadReport(reportInfo.url);
+            
+            // Esconder a tela de código
+            codeContainer.classList.add('hidden');
+        } else {
+            // Código inválido
+            showCodeError('Código de acesso inválido. Tente novamente.');
+        }
+    }
+    
+    // Função para mostrar erro de código
+    function showCodeError(message) {
+        codeError.textContent = message;
+        codeError.classList.add('visible');
+    }
+    
+    // Função para carregar relatório
+    function loadReport(url) {
+        // Mostrar o overlay de carregamento
+        loadingOverlay.style.display = 'flex';
+        
+        // Configurar o iframe para ter fundo transparente
+        reportFrame.style.backgroundColor = 'transparent';
+        
+        // Carregar o relatório
+        reportFrame.src = url;
+        
+        // Adicionar um listener para quando o iframe terminar de carregar
+        reportFrame.onload = function() {
+            console.log('Relatório carregado com sucesso');
+            
+            // Esconder o overlay de carregamento após um pequeno atraso
+            setTimeout(function() {
+                loadingOverlay.style.display = 'none';
+            }, 1000);
+        };
+    }
+    
     // Definir visualização com base no tipo de dispositivo ou preferência salva
     function setInitialViewMode() {
         const savedViewMode = localStorage.getItem('viewMode');
@@ -769,10 +957,23 @@ document.addEventListener('DOMContentLoaded', function() {
             viewToggle.classList.remove('auto-detected');
         }
         
-        // Recarregar o relatório para ajustar à nova visualização
-        const currentUser = localStorage.getItem('currentUser');
-        if (currentUser && reportUrls[currentUser]) {
-            reloadReport(currentUser);
+        // Verificar se há um código de relatório salvo
+        const currentCode = localStorage.getItem('currentReportCode');
+        if (currentCode && reportCodes[currentCode]) {
+            // Se o relatório atual for do tipo mobile e estamos mudando para desktop
+            if (reportCodes[currentCode].type === 'mobile') {
+                // Procurar um relatório desktop para o mesmo usuário
+                for (const code in reportCodes) {
+                    if (reportCodes[code].type === 'desktop') {
+                        localStorage.setItem('currentReportCode', code);
+                        loadReport(reportCodes[code].url);
+                        break;
+                    }
+                }
+            } else {
+                // Recarregar o relatório atual
+                loadReport(reportCodes[currentCode].url);
+            }
         }
     }
     
@@ -788,30 +989,21 @@ document.addEventListener('DOMContentLoaded', function() {
             viewToggle.classList.remove('auto-detected');
         }
         
-        // Recarregar o relatório para ajustar à nova visualização
-        const currentUser = localStorage.getItem('currentUser');
-        if (currentUser && reportUrls[currentUser]) {
-            reloadReport(currentUser);
+        // Verificar se há um código de relatório salvo
+        const currentCode = localStorage.getItem('currentReportCode');
+        if (currentCode && reportCodes[currentCode]) {
+            // Se o relatório atual for do tipo desktop e estamos mudando para mobile
+            if (reportCodes[currentCode].type === 'desktop') {
+                // Procurar o relatório mobile (código 3636)
+                if (reportCodes['3636']) {
+                    localStorage.setItem('currentReportCode', '3636');
+                    loadReport(reportCodes['3636'].url);
+                }
+            } else {
+                // Recarregar o relatório atual
+                loadReport(reportCodes[currentCode].url);
+            }
         }
-    }
-    
-    // Função para recarregar o relatório
-    function reloadReport(username) {
-        // Mostrar o overlay de carregamento
-        loadingOverlay.style.display = 'flex';
-        
-        // Recarregar o iframe com o relatório
-        reportFrame.src = reportUrls[username];
-        
-        // Adicionar um listener para quando o iframe terminar de carregar
-        reportFrame.onload = function() {
-            console.log('Relatório recarregado com sucesso');
-            
-            // Esconder o overlay de carregamento após um pequeno atraso
-            setTimeout(function() {
-                loadingOverlay.style.display = 'none';
-            }, 1000);
-        };
     }
     
     // Função para verificar status de login
@@ -819,45 +1011,27 @@ document.addEventListener('DOMContentLoaded', function() {
         const currentUser = localStorage.getItem('currentUser');
         if (currentUser) {
             // Usuário está logado
-            showDashboard(currentUser);
-            // Definir visualização inicial
-            setInitialViewMode();
-        }
-    }
-    
-    // Função para mostrar o dashboard
-    function showDashboard(username) {
-        userName.textContent = username;
-        userInfo.classList.remove('hidden');
-        loginContainer.classList.add('hidden');
-        
-        // Mostrar o overlay de carregamento
-        loadingOverlay.style.display = 'flex';
-        
-        // Verificar se o usuário tem um relatório configurado
-        if (reportUrls[username]) {
-            console.log(`Carregando relatório para o usuário ${username}`);
+            userName.textContent = currentUser;
+            userInfo.classList.remove('hidden');
+            loginContainer.classList.add('hidden');
             
-            // Configurar o iframe para ter fundo transparente
-            reportFrame.style.backgroundColor = 'transparent';
-            
-            // Carregar o relatório
-            reportFrame.src = reportUrls[username];
-            
-            // Adicionar um listener para quando o iframe terminar de carregar
-            reportFrame.onload = function() {
-                console.log('Relatório carregado com sucesso');
-                
-                // Esconder o overlay de carregamento após um pequeno atraso
-                setTimeout(function() {
-                    loadingOverlay.style.display = 'none';
-                }, 1000);
-            };
-        } else {
-            // Caso o usuário não tenha um relatório específico, mostrar uma mensagem
-            reportFrame.src = 'about:blank';
-            loadingOverlay.style.display = 'none';
-            alert('Nenhum relatório disponível para este usuário.');
+            // Verificar se já tem um código de relatório salvo
+            const currentCode = localStorage.getItem('currentReportCode');
+            if (currentCode && reportCodes[currentCode]) {
+                // Já tem um relatório selecionado, carregar diretamente
+                if (reportCodes[currentCode].type === 'mobile') {
+                    setMobileView();
+                } else {
+                    setDesktopView();
+                }
+                loadReport(reportCodes[currentCode].url);
+                codeContainer.classList.add('hidden');
+            } else {
+                // Mostrar tela de seleção de código
+                codeContainer.classList.remove('hidden');
+                // Pré-selecionar a opção com base no dispositivo
+                selectViewOption(detectDeviceType());
+            }
         }
     }
     
@@ -881,10 +1055,19 @@ document.addEventListener('DOMContentLoaded', function() {
             // Login bem-sucedido
             console.log('Login bem-sucedido para:', username);
             localStorage.setItem('currentUser', username);
-            showDashboard(username);
+            
+            // Mostrar nome do usuário
+            userName.textContent = username;
+            userInfo.classList.remove('hidden');
+            loginContainer.classList.add('hidden');
+            
+            // Mostrar tela de código de acesso
+            codeContainer.classList.remove('hidden');
+            
+            // Pré-selecionar a opção com base no dispositivo
+            selectViewOption(detectDeviceType());
+            
             clearLoginForm();
-            // Definir visualização inicial
-            setInitialViewMode();
         } else {
             // Login falhou
             console.log('Login falhou para:', username);
@@ -996,8 +1179,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Função para fazer logout
     function logout() {
         localStorage.removeItem('currentUser');
+        localStorage.removeItem('currentReportCode');
         userInfo.classList.add('hidden');
         loginContainer.classList.remove('hidden');
+        codeContainer.classList.add('hidden');
         reportFrame.src = 'about:blank';
         loadingOverlay.style.display = 'none';
         clearLoginForm();
@@ -1090,6 +1275,16 @@ document.addEventListener('DOMContentLoaded', function() {
     // Event Listeners
     loginButton.addEventListener('click', login);
     registerButton.addEventListener('click', register);
+    accessButton.addEventListener('click', checkAccessCode);
+    
+    // Opções de visualização
+    desktopOption.addEventListener('click', function() {
+        selectViewOption('desktop');
+    });
+    
+    mobileOption.addEventListener('click', function() {
+        selectViewOption('mobile');
+    });
     
     // Permitir login com Enter
     passwordInput.addEventListener('keypress', function(e) {
@@ -1102,6 +1297,13 @@ document.addEventListener('DOMContentLoaded', function() {
     confirmPassword.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
             register();
+        }
+    });
+    
+    // Permitir código com Enter
+    accessCode.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            checkAccessCode();
         }
     });
     
