@@ -101,9 +101,21 @@ html, body {
     background-color: rgba(255, 255, 255, 0.1);
 }
 
+.button.active {
+    background-color: rgba(255, 255, 255, 0.4);
+    color: #1e5631;
+    font-weight: 600;
+}
+
 .button svg {
     width: 14px;
     height: 14px;
+}
+
+.view-toggle {
+    display: flex;
+    gap: 4px;
+    margin-right: 12px;
 }
 
 .content {
@@ -130,6 +142,15 @@ html, body {
     overflow: hidden;
     position: relative;
     z-index: 2;
+    transition: all 0.3s ease;
+}
+
+.report-container.mobile-view {
+    width: 414px; /* Largura padrão para visualização mobile */
+    height: 100%;
+    margin: 0 auto;
+    border-left: 1px solid rgba(0, 0, 0, 0.1);
+    border-right: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .report-container iframe {
@@ -467,6 +488,14 @@ input:focus {
     .tab.active {
         border-bottom: 2px solid #1e5631;
     }
+    
+    .view-toggle {
+        margin-right: 6px;
+    }
+    
+    .report-container.mobile-view {
+        width: 100%; /* Em dispositivos móveis, a visualização mobile ocupa 100% da largura */
+    }
 }
 </style>
 </head>
@@ -478,6 +507,10 @@ input:focus {
         <div class="title">Relatório Power BI - Transportes</div>
     </div>
     <div class="user-info hidden" id="userInfo">
+        <div class="view-toggle">
+            <button id="desktopViewButton" class="button active">Desktop</button>
+            <button id="mobileViewButton" class="button">Celular</button>
+        </div>
         <span class="user-name" id="userName">Usuário</span>
         <button id="changePasswordButton" class="button secondary">Alterar</button>
         <button id="logoutButton" class="button">Sair</button>
@@ -488,7 +521,7 @@ input:focus {
     <!-- Imagem de fundo que ficará atrás do relatório -->
     <div class="background-image"></div>
     
-    <div class="report-container">
+    <div class="report-container" id="reportContainer">
         <!-- Overlay de carregamento -->
         <div id="loadingOverlay" class="loading-overlay">
             <div class="spinner"></div>
@@ -588,6 +621,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Elementos do DOM
     const loginContainer = document.getElementById('loginContainer');
     const reportFrame = document.getElementById('reportFrame');
+    const reportContainer = document.getElementById('reportContainer');
     const loadingOverlay = document.getElementById('loadingOverlay');
     const userInfo = document.getElementById('userInfo');
     const userName = document.getElementById('userName');
@@ -616,6 +650,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const registerPassword = document.getElementById('registerPassword');
     const confirmPassword = document.getElementById('confirmPassword');
     const registerError = document.getElementById('registerError');
+    
+    // Elementos de alternância de visualização
+    const desktopViewButton = document.getElementById('desktopViewButton');
+    const mobileViewButton = document.getElementById('mobileViewButton');
     
     // URLs dos relatórios Power BI - URLs estáticas sem modificações
     const reportUrls = {
@@ -646,12 +684,82 @@ document.addEventListener('DOMContentLoaded', function() {
     // Verificar se já está logado
     checkLoginStatus();
     
+    // Detectar tipo de dispositivo e definir visualização padrão
+    function detectDeviceType() {
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+        return isMobile ? 'mobile' : 'desktop';
+    }
+    
+    // Definir visualização com base no tipo de dispositivo ou preferência salva
+    function setInitialViewMode() {
+        const savedViewMode = localStorage.getItem('viewMode');
+        const deviceType = detectDeviceType();
+        
+        // Usar preferência salva ou detectar automaticamente
+        const viewMode = savedViewMode || deviceType;
+        
+        if (viewMode === 'mobile') {
+            setMobileView();
+        } else {
+            setDesktopView();
+        }
+    }
+    
+    // Função para definir visualização desktop
+    function setDesktopView() {
+        reportContainer.classList.remove('mobile-view');
+        desktopViewButton.classList.add('active');
+        mobileViewButton.classList.remove('active');
+        localStorage.setItem('viewMode', 'desktop');
+        
+        // Recarregar o relatório para ajustar à nova visualização
+        const currentUser = localStorage.getItem('currentUser');
+        if (currentUser && reportUrls[currentUser]) {
+            reloadReport(currentUser);
+        }
+    }
+    
+    // Função para definir visualização mobile
+    function setMobileView() {
+        reportContainer.classList.add('mobile-view');
+        desktopViewButton.classList.remove('active');
+        mobileViewButton.classList.add('active');
+        localStorage.setItem('viewMode', 'mobile');
+        
+        // Recarregar o relatório para ajustar à nova visualização
+        const currentUser = localStorage.getItem('currentUser');
+        if (currentUser && reportUrls[currentUser]) {
+            reloadReport(currentUser);
+        }
+    }
+    
+    // Função para recarregar o relatório
+    function reloadReport(username) {
+        // Mostrar o overlay de carregamento
+        loadingOverlay.style.display = 'flex';
+        
+        // Recarregar o iframe com o relatório
+        reportFrame.src = reportUrls[username];
+        
+        // Adicionar um listener para quando o iframe terminar de carregar
+        reportFrame.onload = function() {
+            console.log('Relatório recarregado com sucesso');
+            
+            // Esconder o overlay de carregamento após um pequeno atraso
+            setTimeout(function() {
+                loadingOverlay.style.display = 'none';
+            }, 1000);
+        };
+    }
+    
     // Função para verificar status de login
     function checkLoginStatus() {
         const currentUser = localStorage.getItem('currentUser');
         if (currentUser) {
             // Usuário está logado
             showDashboard(currentUser);
+            // Definir visualização inicial
+            setInitialViewMode();
         }
     }
     
@@ -713,6 +821,8 @@ document.addEventListener('DOMContentLoaded', function() {
             localStorage.setItem('currentUser', username);
             showDashboard(username);
             clearLoginForm();
+            // Definir visualização inicial
+            setInitialViewMode();
         } else {
             // Login falhou
             console.log('Login falhou para:', username);
@@ -917,6 +1027,10 @@ document.addEventListener('DOMContentLoaded', function() {
     registerTab.addEventListener('click', function() {
         switchTab('register');
     });
+    
+    // Alternar entre visualizações
+    desktopViewButton.addEventListener('click', setDesktopView);
+    mobileViewButton.addEventListener('click', setMobileView);
     
     logoutButton.addEventListener('click', logout);
     changePasswordButton.addEventListener('click', openChangePasswordModal);
