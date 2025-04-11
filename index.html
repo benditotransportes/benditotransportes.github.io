@@ -112,11 +112,24 @@ html, body {
     position: relative;
 }
 
+.background-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image%202-uayIptAhjXe1icvZgZU1YStcYR9KZz.png');
+    background-size: cover;
+    background-position: center;
+    z-index: 1;
+}
+
 .report-container {
     width: 100%;
     height: 100%;
     overflow: hidden;
     position: relative;
+    z-index: 2;
 }
 
 .report-container iframe {
@@ -126,6 +139,7 @@ html, body {
     position: absolute;
     top: 0;
     left: 0;
+    background-color: transparent;
 }
 
 /* Estilos para o overlay de carregamento */
@@ -471,6 +485,9 @@ input:focus {
 </div>
 
 <div class="content">
+    <!-- Imagem de fundo que ficará atrás do relatório -->
+    <div class="background-image"></div>
+    
     <div class="report-container">
         <!-- Overlay de carregamento -->
         <div id="loadingOverlay" class="loading-overlay">
@@ -650,6 +667,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Verificar se o usuário tem um relatório configurado
         if (reportUrls[username]) {
             console.log(`Carregando relatório para o usuário ${username}`);
+            
+            // Configurar o iframe para ter fundo transparente
+            reportFrame.style.backgroundColor = 'transparent';
             
             // Carregar o relatório
             reportFrame.src = reportUrls[username];
