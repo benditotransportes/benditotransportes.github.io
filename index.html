@@ -101,18 +101,6 @@ html, body {
     background-color: rgba(255, 255, 255, 0.1);
 }
 
-.button.active {
-    background-color: rgba(255, 255, 255, 0.4);
-    color: #1e5631;
-    font-weight: 600;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-.button svg {
-    width: 14px;
-    height: 14px;
-}
-
 .content {
     flex: 1;
     height: calc(100vh - 60px);
@@ -127,14 +115,6 @@ html, body {
     z-index: 2;
     transition: all 0.3s ease;
     background-color: #fff;
-}
-
-.report-container.mobile-view {
-    width: 414px; /* Largura padrão para visualização mobile */
-    height: 100%;
-    margin: 0 auto;
-    border-left: 1px solid rgba(0, 0, 0, 0.1);
-    border-right: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .report-container iframe {
@@ -174,7 +154,7 @@ html, body {
     to { transform: rotate(360deg); }
 }
 
-.login-container, .code-container {
+.login-container {
     position: absolute;
     top: 0;
     left: 0;
@@ -188,7 +168,7 @@ html, body {
     padding: 16px;
 }
 
-.login-box, .code-box {
+.login-box {
     background-color: white;
     border-radius: 8px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.2);
@@ -197,7 +177,7 @@ html, body {
     max-width: 400px;
 }
 
-.login-title, .code-title {
+.login-title {
     color: #1e5631;
     margin-bottom: 20px;
     font-size: 22px;
@@ -248,7 +228,7 @@ input:focus {
     margin-top: 24px;
 }
 
-.login-button, .code-button {
+.login-button {
     background: linear-gradient(to right, #1e5631, #2e7d32);
     color: white;
     border: none;
@@ -262,7 +242,7 @@ input:focus {
     -webkit-appearance: none;
 }
 
-.login-button:hover, .code-button:hover {
+.login-button:hover {
     background: linear-gradient(to right, #184a29, #256e29);
     transform: translateY(-1px);
 }
@@ -285,23 +265,6 @@ input:focus {
 .register-button:hover {
     background: linear-gradient(to right, #c19b2e, #7cb342);
     transform: translateY(-1px);
-}
-
-.auth-links {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 16px;
-    font-size: 14px;
-}
-
-.auth-link {
-    color: #1e5631;
-    text-decoration: none;
-    cursor: pointer;
-}
-
-.auth-link:hover {
-    text-decoration: underline;
 }
 
 .modal {
@@ -437,11 +400,11 @@ input:focus {
         max-width: 80px;
     }
     
-    .login-box, .modal-content, .code-box {
+    .login-box, .modal-content {
         padding: 20px 16px;
     }
     
-    .login-title, .code-title {
+    .login-title {
         font-size: 20px;
         margin-bottom: 16px;
     }
@@ -451,7 +414,7 @@ input:focus {
         font-size: 16px;
     }
     
-    .login-button, .modal-button, .register-button, .code-button {
+    .login-button, .modal-button, .register-button {
         padding: 12px 16px;
     }
     
@@ -471,10 +434,6 @@ input:focus {
     
     .tab.active {
         border-bottom: 2px solid #1e5631;
-    }
-    
-    .report-container.mobile-view {
-        width: 100%; /* Em dispositivos móveis, a visualização mobile ocupa 100% da largura */
     }
 }
 </style>
@@ -500,23 +459,6 @@ input:focus {
             <div class="spinner"></div>
         </div>
         <iframe id="reportFrame" src="about:blank" allowFullScreen="true"></iframe>
-    </div>
-    
-    <!-- Tela de código de acesso -->
-    <div class="code-container" id="codeContainer">
-        <div class="code-box">
-            <h2 class="code-title">Digite o Código de Acesso</h2>
-            
-            <div class="form-group">
-                <label for="accessCode">Código de Acesso</label>
-                <input type="password" id="accessCode" placeholder="Digite o código de acesso">
-                <div class="error-message" id="codeError">Código inválido. Tente novamente.</div>
-            </div>
-            
-            <div class="button-container">
-                <button id="accessButton" class="code-button">Acessar Relatório</button>
-            </div>
-        </div>
     </div>
     
     <!-- Tela de login -->
@@ -611,7 +553,6 @@ input:focus {
 document.addEventListener('DOMContentLoaded', function() {
     // Elementos do DOM
     const loginContainer = document.getElementById('loginContainer');
-    const codeContainer = document.getElementById('codeContainer');
     const reportFrame = document.getElementById('reportFrame');
     const reportContainer = document.getElementById('reportContainer');
     const loadingOverlay = document.getElementById('loadingOverlay');
@@ -643,25 +584,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const confirmPassword = document.getElementById('confirmPassword');
     const registerError = document.getElementById('registerError');
     
-    // Elementos de código de acesso
-    const accessCode = document.getElementById('accessCode');
-    const accessButton = document.getElementById('accessButton');
-    const codeError = document.getElementById('codeError');
-    
-    // URLs dos relatórios Power BI com códigos de acesso
-    const reportCodes = {
-        '2121': {
-            name: 'Power bi Bendito',
-            url: 'https://app.powerbi.com/view?r=eyJrIjoiOTU3NTc1YTUtMWJjMS00OTE1LWFjMGMtMzhkZjU4ODdhZWFhIiwidCI6Ijk2OWI5ZDQ2LTg3MWMtNDNlZS04MTJhLWVmY2FmMGYzMDFhZiJ9'
-        },
-        '2511': {
-            name: 'Power bi Bendito - operacional',
-            url: 'https://app.powerbi.com/view?r=eyJrIjoiNDUxZjg2ZDctMTk2YS00MDdhLTg3NTUtMmIzYTU2OTVlMTliIiwidCI6Ijk2OWI5ZDQ2LTg3MWMtNDNlZS04MTJhLWVmY2FmMGYzMDFhZiJ9'
-        },
-        '3636': {
-            name: 'Power bi Bendito - versão celular',
-            url: 'https://app.powerbi.com/view?r=eyJrIjoiYzA1MDI4ZDItNzMyYi00OTZkLWJkMzAtMzg1MDczZGFkNmEzIiwidCI6Ijk2OWI5ZDQ2LTg3MWMtNDNlZS04MTJhLWVmY2FmMGYzMDFhZiJ9'
-        }
+    // URLs dos relatórios Power BI
+    const reportUrls = {
+        'desktop': 'https://app.powerbi.com/view?r=eyJrIjoiOTU3NTc1YTUtMWJjMS00OTE1LWFjMGMtMzhkZjU4ODdhZWFhIiwidCI6Ijk2OWI5ZDQ2LTg3MWMtNDNlZS04MTJhLWVmY2FmMGYzMDFhZiJ9',
+        'mobile': 'https://app.powerbi.com/view?r=eyJrIjoiYzA1MDI4ZDItNzMyYi00OTZkLWJkMzAtMzg1MDczZGFkNmEzIiwidCI6Ijk2OWI5ZDQ2LTg3MWMtNDNlZS04MTJhLWVmY2FmMGYzMDFhZiJ9'
     };
     
     // Usuários (em um ambiente real, isso estaria em um banco de dados)
@@ -687,49 +613,53 @@ document.addEventListener('DOMContentLoaded', function() {
     // Verificar se já está logado
     checkLoginStatus();
     
-    // Função para verificar código de acesso
-    function checkAccessCode() {
-        const code = accessCode.value.trim();
+    // Detectar tipo de dispositivo
+    function detectDeviceType() {
+        // Verificar se é um dispositivo móvel usando User Agent
+        const mobileUserAgent = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         
-        if (!code) {
-            showCodeError('Por favor, digite o código de acesso.');
-            return;
-        }
+        // Verificar se a tela é pequena (típico de dispositivos móveis)
+        const smallScreen = window.innerWidth <= 768;
         
-        if (reportCodes[code]) {
-            // Código válido
-            const reportInfo = reportCodes[code];
-            
-            // Salvar o código para uso posterior
-            localStorage.setItem('currentReportCode', code);
-            
-            // Carregar o relatório
-            loadReport(reportInfo.url);
-            
-            // Esconder a tela de código
-            codeContainer.classList.add('hidden');
-        } else {
-            // Código inválido
-            showCodeError('Código de acesso inválido. Tente novamente.');
-        }
+        // Verificar se tem recursos de toque (típico de dispositivos móveis)
+        const touchEnabled = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        
+        // Combinar os fatores para uma detecção mais precisa
+        const isMobile = mobileUserAgent || (smallScreen && touchEnabled);
+        
+        console.log('Detecção de dispositivo:', {
+            mobileUserAgent,
+            smallScreen,
+            touchEnabled,
+            resultado: isMobile ? 'mobile' : 'desktop'
+        });
+        
+        return isMobile ? 'mobile' : 'desktop';
     }
     
-    // Função para mostrar erro de código
-    function showCodeError(message) {
-        codeError.textContent = message;
-        codeError.classList.add('visible');
-    }
-    
-    // Função para carregar relatório
-    function loadReport(url) {
+    // Função para carregar relatório com base no tipo de dispositivo
+    function loadReport(username) {
         // Mostrar o overlay de carregamento
         loadingOverlay.style.display = 'flex';
+        
+        // Detectar o tipo de dispositivo
+        const deviceType = detectDeviceType();
         
         // Configurar o iframe para ter fundo transparente
         reportFrame.style.backgroundColor = 'transparent';
         
-        // Carregar o relatório
-        reportFrame.src = url;
+        // Carregar o relatório apropriado com base no tipo de dispositivo
+        if (username === 'bruno') {
+            const reportUrl = reportUrls[deviceType];
+            reportFrame.src = reportUrl;
+            
+            console.log(`Carregando relatório para ${username} em dispositivo ${deviceType}`);
+        } else {
+            // Para outros usuários, carregar um relatório padrão ou mostrar mensagem
+            alert('Relatório não disponível para este usuário.');
+            loadingOverlay.style.display = 'none';
+            return;
+        }
         
         // Adicionar um listener para quando o iframe terminar de carregar
         reportFrame.onload = function() {
@@ -751,16 +681,8 @@ document.addEventListener('DOMContentLoaded', function() {
             userInfo.classList.remove('hidden');
             loginContainer.classList.add('hidden');
             
-            // Verificar se já tem um código de relatório salvo
-            const currentCode = localStorage.getItem('currentReportCode');
-            if (currentCode && reportCodes[currentCode]) {
-                // Já tem um relatório selecionado, carregar diretamente
-                loadReport(reportCodes[currentCode].url);
-                codeContainer.classList.add('hidden');
-            } else {
-                // Mostrar tela de seleção de código
-                codeContainer.classList.remove('hidden');
-            }
+            // Carregar o relatório apropriado
+            loadReport(currentUser);
         }
     }
     
@@ -790,8 +712,8 @@ document.addEventListener('DOMContentLoaded', function() {
             userInfo.classList.remove('hidden');
             loginContainer.classList.add('hidden');
             
-            // Mostrar tela de código de acesso
-            codeContainer.classList.remove('hidden');
+            // Carregar o relatório apropriado
+            loadReport(username);
             
             clearLoginForm();
         } else {
@@ -905,10 +827,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Função para fazer logout
     function logout() {
         localStorage.removeItem('currentUser');
-        localStorage.removeItem('currentReportCode');
         userInfo.classList.add('hidden');
         loginContainer.classList.remove('hidden');
-        codeContainer.classList.add('hidden');
         reportFrame.src = 'about:blank';
         loadingOverlay.style.display = 'none';
         clearLoginForm();
@@ -974,10 +894,19 @@ document.addEventListener('DOMContentLoaded', function() {
         passwordError.classList.add('visible');
     }
     
+    // Monitorar mudanças na orientação e tamanho da tela
+    window.addEventListener('resize', function() {
+        // Verificar se o usuário está logado
+        const currentUser = localStorage.getItem('currentUser');
+        if (currentUser === 'bruno') {
+            // Recarregar o relatório para refletir o novo tipo de dispositivo
+            loadReport(currentUser);
+        }
+    });
+    
     // Event Listeners
     loginButton.addEventListener('click', login);
     registerButton.addEventListener('click', register);
-    accessButton.addEventListener('click', checkAccessCode);
     
     // Permitir login com Enter
     passwordInput.addEventListener('keypress', function(e) {
@@ -990,13 +919,6 @@ document.addEventListener('DOMContentLoaded', function() {
     confirmPassword.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
             register();
-        }
-    });
-    
-    // Permitir código com Enter
-    accessCode.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            checkAccessCode();
         }
     });
     
