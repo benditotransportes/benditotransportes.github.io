@@ -105,6 +105,7 @@ html, body {
     flex: 1;
     height: calc(100vh - 60px);
     position: relative;
+    overflow: hidden;
 }
 
 .report-container {
@@ -113,10 +114,7 @@ html, body {
     overflow: hidden;
     position: relative;
     z-index: 2;
-    transition: all 0.3s ease;
     background-color: #fff;
-    transform: scale(1.2);
-    transform-origin: top left;
 }
 
 .report-container iframe {
@@ -608,12 +606,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
     
-    // URLs de fallback baseados no tipo de dispositivo
-    const fallbackUrls = {
-        'desktop': 'https://app.powerbi.com/view?r=eyJrIjoiOTU3NTc1YTUtMWJjMS00OTE1LWFjMGMtMzhkZjU4ODdhZWFhIiwidCI6Ijk2OWI5ZDQ2LTg3MWMtNDNlZS04MTJhLWVmY2FmMGYzMDFhZiJ9',
-        'mobile': 'https://app.powerbi.com/view?r=eyJrIjoiYzA1MDI4ZDItNzMyYi00OTZkLWJkMzAtMzg1MDczZGFkNmEzIiwidCI6Ijk2OWI5ZDQ2LTg3MWMtNDNlZS04MTJhLWVmY2FmMGYzMDFhZiJ9'
-    };
-    
     // Usuários (em um ambiente real, isso estaria em um banco de dados)
     // Aqui estamos simulando com localStorage para persistência
     if (!localStorage.getItem('users')) {
@@ -663,15 +655,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return isMobile ? 'mobile' : 'desktop';
     }
     
-    // Função para aplicar zoom ao iframe
-    function applyZoom() {
-        // Aplicar zoom de 120% ao container do relatório
-        reportContainer.style.transform = 'scale(1.2)';
-        reportContainer.style.transformOrigin = 'top left';
-        reportContainer.style.overflow = 'auto';
-    }
-    
-    // Função para carregar relatório com base no código de acesso
+    // Função para carregar relatório com base no código de acesso e tipo de dispositivo
     function loadReport(username) {
         // Mostrar o overlay de carregamento
         loadingOverlay.style.display = 'flex';
@@ -686,13 +670,33 @@ document.addEventListener('DOMContentLoaded', function() {
         let reportUrl;
         
         // Verificar se o usuário tem um código de acesso válido
-        if (user && user.accessCode && reportCodes[user.accessCode]) {
-            reportUrl = reportCodes[user.accessCode].url;
-            console.log(`Carregando relatório para ${username} com código de acesso ${user.accessCode}`);
+        if (user && user.accessCode) {
+            // Caso especial: usuários com código 987116 têm acesso a ambos os relatórios
+            if (user.accessCode === '987116') {
+                const deviceType = detectDeviceType();
+                if (deviceType === 'mobile') {
+                    // Em dispositivos móveis, usar o relatório para celular (953116)
+                    reportUrl = reportCodes['953116'].url;
+                    console.log(`Carregando relatório móvel para ${username} com código 987116`);
+                } else {
+                    // Em desktop, usar o relatório normal (987116)
+                    reportUrl = reportCodes['987116'].url;
+                    console.log(`Carregando relatório desktop para ${username} com código 987116`);
+                }
+            } else if (reportCodes[user.accessCode]) {
+                // Para outros códigos, carregar o relatório correspondente
+                reportUrl = reportCodes[user.accessCode].url;
+                console.log(`Carregando relatório para ${username} com código de acesso ${user.accessCode}`);
+            } else {
+                // Código inválido, usar fallback
+                const deviceType = detectDeviceType();
+                reportUrl = deviceType === 'mobile' ? reportCodes['953116'].url : reportCodes['987116'].url;
+                console.log(`Usando fallback para ${username} em dispositivo ${deviceType}`);
+            }
         } else {
-            // Fallback: usar a detecção de dispositivo
+            // Sem código de acesso, usar fallback
             const deviceType = detectDeviceType();
-            reportUrl = fallbackUrls[deviceType];
+            reportUrl = deviceType === 'mobile' ? reportCodes['953116'].url : reportCodes['987116'].url;
             console.log(`Usando fallback para ${username} em dispositivo ${deviceType}`);
         }
         
@@ -702,9 +706,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // Adicionar um listener para quando o iframe terminar de carregar
         reportFrame.onload = function() {
             console.log('Relatório carregado com sucesso');
-            
-            // Aplicar zoom ao relatório
-            applyZoom();
             
             // Esconder o overlay de carregamento após um pequeno atraso
             setTimeout(function() {
@@ -949,14 +950,11 @@ document.addEventListener('DOMContentLoaded', function() {
         // Verificar se o usuário está logado
         const currentUser = localStorage.getItem('currentUser');
         if (currentUser) {
-            // Reajustar o zoom do relatório
-            applyZoom();
-            
             const users = JSON.parse(localStorage.getItem('users'));
             const user = users[currentUser];
             
-            // Se o usuário não tem um código de acesso específico, recarregar com base no dispositivo
-            if (!user.accessCode || !reportCodes[user.accessCode]) {
+            // Se o usuário tem código 987116, recarregar o relatório com base no dispositivo
+            if (user.accessCode === '987116') {
                 loadReport(currentUser);
             }
         }
