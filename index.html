@@ -509,6 +509,11 @@ input:focus {
                 <div class="form-group">
                     <label for="confirmPassword">Confirmar Senha</label>
                     <input type="password" id="confirmPassword" placeholder="Confirme sua senha" autocomplete="new-password">
+                </div>
+                
+                <div class="form-group">
+                    <label for="accessCode">Código de Acesso</label>
+                    <input type="text" id="accessCode" placeholder="Digite o código de acesso">
                     <div class="error-message" id="registerError"></div>
                 </div>
                 
@@ -582,10 +587,28 @@ document.addEventListener('DOMContentLoaded', function() {
     const registerUsername = document.getElementById('registerUsername');
     const registerPassword = document.getElementById('registerPassword');
     const confirmPassword = document.getElementById('confirmPassword');
+    const accessCode = document.getElementById('accessCode');
     const registerError = document.getElementById('registerError');
     
-    // URLs dos relatórios Power BI
-    const reportUrls = {
+    // Códigos de acesso e URLs dos relatórios Power BI
+    const reportCodes = {
+        '953116': {
+            name: 'Power bi Bendito - versão celular',
+            url: 'https://app.powerbi.com/view?r=eyJrIjoiYzA1MDI4ZDItNzMyYi00OTZkLWJkMzAtMzg1MDczZGFkNmEzIiwidCI6Ijk2OWI5ZDQ2LTg3MWMtNDNlZS04MTJhLWVmY2FmMGYzMDFhZiJ9'
+        },
+        '987116': {
+            name: 'Power bi Bendito',
+            url: 'https://app.powerbi.com/view?r=eyJrIjoiOTU3NTc1YTUtMWJjMS00OTE1LWFjMGMtMzhkZjU4ODdhZWFhIiwidCI6Ijk2OWI5ZDQ2LTg3MWMtNDNlZS04MTJhLWVmY2FmMGYzMDFhZiJ9'
+        },
+        // Adicionando um código padrão para o relatório operacional
+        '123456': {
+            name: 'Power bi Bendito - operacional',
+            url: 'https://app.powerbi.com/view?r=eyJrIjoiNDUxZjg2ZDctMTk2YS00MDdhLTg3NTUtMmIzYTU2OTVlMTliIiwidCI6Ijk2OWI5ZDQ2LTg3MWMtNDNlZS04MTJhLWVmY2FmMGYzMDFhZiJ9'
+        }
+    };
+    
+    // URLs de fallback baseados no tipo de dispositivo
+    const fallbackUrls = {
         'desktop': 'https://app.powerbi.com/view?r=eyJrIjoiOTU3NTc1YTUtMWJjMS00OTE1LWFjMGMtMzhkZjU4ODdhZWFhIiwidCI6Ijk2OWI5ZDQ2LTg3MWMtNDNlZS04MTJhLWVmY2FmMGYzMDFhZiJ9',
         'mobile': 'https://app.powerbi.com/view?r=eyJrIjoiYzA1MDI4ZDItNzMyYi00OTZkLWJkMzAtMzg1MDczZGFkNmEzIiwidCI6Ijk2OWI5ZDQ2LTg3MWMtNDNlZS04MTJhLWVmY2FmMGYzMDFhZiJ9'
     };
@@ -597,11 +620,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const defaultUsers = {
             'renan': {
                 password: '1234',
-                email: 'renan@exemplo.com'
+                email: 'renan@exemplo.com',
+                accessCode: '987116'
             },
             'bruno': {
                 password: '1234',
-                email: 'bruno@exemplo.com'
+                email: 'bruno@exemplo.com',
+                accessCode: '987116'
             }
         };
         localStorage.setItem('users', JSON.stringify(defaultUsers));
@@ -637,29 +662,33 @@ document.addEventListener('DOMContentLoaded', function() {
         return isMobile ? 'mobile' : 'desktop';
     }
     
-    // Função para carregar relatório com base no tipo de dispositivo
+    // Função para carregar relatório com base no código de acesso
     function loadReport(username) {
         // Mostrar o overlay de carregamento
         loadingOverlay.style.display = 'flex';
         
-        // Detectar o tipo de dispositivo
-        const deviceType = detectDeviceType();
+        // Obter os dados do usuário
+        const users = JSON.parse(localStorage.getItem('users'));
+        const user = users[username];
         
         // Configurar o iframe para ter fundo transparente
         reportFrame.style.backgroundColor = 'transparent';
         
-        // Carregar o relatório apropriado com base no tipo de dispositivo
-        if (username === 'bruno') {
-            const reportUrl = reportUrls[deviceType];
-            reportFrame.src = reportUrl;
-            
-            console.log(`Carregando relatório para ${username} em dispositivo ${deviceType}`);
+        let reportUrl;
+        
+        // Verificar se o usuário tem um código de acesso válido
+        if (user && user.accessCode && reportCodes[user.accessCode]) {
+            reportUrl = reportCodes[user.accessCode].url;
+            console.log(`Carregando relatório para ${username} com código de acesso ${user.accessCode}`);
         } else {
-            // Para outros usuários, carregar um relatório padrão ou mostrar mensagem
-            alert('Relatório não disponível para este usuário.');
-            loadingOverlay.style.display = 'none';
-            return;
+            // Fallback: usar a detecção de dispositivo
+            const deviceType = detectDeviceType();
+            reportUrl = fallbackUrls[deviceType];
+            console.log(`Usando fallback para ${username} em dispositivo ${deviceType}`);
         }
+        
+        // Carregar o relatório
+        reportFrame.src = reportUrl;
         
         // Adicionar um listener para quando o iframe terminar de carregar
         reportFrame.onload = function() {
@@ -729,10 +758,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const username = registerUsername.value.trim().toLowerCase();
         const password = registerPassword.value;
         const confirmPwd = confirmPassword.value;
+        const code = accessCode.value.trim();
         
         // Validações
         if (!email || !username || !password || !confirmPwd) {
-            showRegisterError('Preencha todos os campos.');
+            showRegisterError('Preencha todos os campos obrigatórios.');
             return;
         }
         
@@ -751,6 +781,12 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
+        // Verificar se o código de acesso é válido
+        if (code && !reportCodes[code]) {
+            showRegisterError('Código de acesso inválido.');
+            return;
+        }
+        
         // Verificar se o usuário já existe
         const users = JSON.parse(localStorage.getItem('users'));
         if (users[username]) {
@@ -761,11 +797,12 @@ document.addEventListener('DOMContentLoaded', function() {
         // Adicionar novo usuário
         users[username] = {
             password: password,
-            email: email
+            email: email,
+            accessCode: code || '' // Salvar o código de acesso, mesmo que vazio
         };
         
         localStorage.setItem('users', JSON.stringify(users));
-        console.log('Novo usuário registrado:', username);
+        console.log('Novo usuário registrado:', username, 'com código:', code);
         
         // Limpar formulário e mostrar mensagem de sucesso
         clearRegisterForm();
@@ -806,6 +843,7 @@ document.addEventListener('DOMContentLoaded', function() {
         registerUsername.value = '';
         registerPassword.value = '';
         confirmPassword.value = '';
+        accessCode.value = '';
         registerError.classList.remove('visible');
     }
     
@@ -898,9 +936,14 @@ document.addEventListener('DOMContentLoaded', function() {
     window.addEventListener('resize', function() {
         // Verificar se o usuário está logado
         const currentUser = localStorage.getItem('currentUser');
-        if (currentUser === 'bruno') {
-            // Recarregar o relatório para refletir o novo tipo de dispositivo
-            loadReport(currentUser);
+        if (currentUser) {
+            const users = JSON.parse(localStorage.getItem('users'));
+            const user = users[currentUser];
+            
+            // Se o usuário não tem um código de acesso específico, recarregar com base no dispositivo
+            if (!user.accessCode || !reportCodes[user.accessCode]) {
+                loadReport(currentUser);
+            }
         }
     });
     
@@ -917,6 +960,13 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Permitir registro com Enter
     confirmPassword.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            register();
+        }
+    });
+    
+    // Permitir código com Enter
+    accessCode.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
             register();
         }
