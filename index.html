@@ -115,6 +115,8 @@ html, body {
     z-index: 2;
     transition: all 0.3s ease;
     background-color: #fff;
+    transform: scale(1.2);
+    transform-origin: top left;
 }
 
 .report-container iframe {
@@ -600,7 +602,6 @@ document.addEventListener('DOMContentLoaded', function() {
             name: 'Power bi Bendito',
             url: 'https://app.powerbi.com/view?r=eyJrIjoiOTU3NTc1YTUtMWJjMS00OTE1LWFjMGMtMzhkZjU4ODdhZWFhIiwidCI6Ijk2OWI5ZDQ2LTg3MWMtNDNlZS04MTJhLWVmY2FmMGYzMDFhZiJ9'
         },
-        // Adicionando um código padrão para o relatório operacional
         '940955': {
             name: 'Power bi Bendito - operacional',
             url: 'https://app.powerbi.com/view?r=eyJrIjoiNDUxZjg2ZDctMTk2YS00MDdhLTg3NTUtMmIzYTU2OTVlMTliIiwidCI6Ijk2OWI5ZDQ2LTg3MWMtNDNlZS04MTJhLWVmY2FmMGYzMDFhZiJ9'
@@ -662,6 +663,14 @@ document.addEventListener('DOMContentLoaded', function() {
         return isMobile ? 'mobile' : 'desktop';
     }
     
+    // Função para aplicar zoom ao iframe
+    function applyZoom() {
+        // Aplicar zoom de 120% ao container do relatório
+        reportContainer.style.transform = 'scale(1.2)';
+        reportContainer.style.transformOrigin = 'top left';
+        reportContainer.style.overflow = 'auto';
+    }
+    
     // Função para carregar relatório com base no código de acesso
     function loadReport(username) {
         // Mostrar o overlay de carregamento
@@ -693,6 +702,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Adicionar um listener para quando o iframe terminar de carregar
         reportFrame.onload = function() {
             console.log('Relatório carregado com sucesso');
+            
+            // Aplicar zoom ao relatório
+            applyZoom();
             
             // Esconder o overlay de carregamento após um pequeno atraso
             setTimeout(function() {
@@ -937,6 +949,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Verificar se o usuário está logado
         const currentUser = localStorage.getItem('currentUser');
         if (currentUser) {
+            // Reajustar o zoom do relatório
+            applyZoom();
+            
             const users = JSON.parse(localStorage.getItem('users'));
             const user = users[currentUser];
             
