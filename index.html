@@ -1,120 +1,1016 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Relatório Power BI - Transportes</title>
-  <link rel="stylesheet" href="styles.css"> <!-- se quiser separar estilo -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Relatório Power BI - Transportes</title>
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100%;
+    overflow: hidden;
+}
+
+.header {
+    background: linear-gradient(to right, #1e5631, #2e7d32, #8bc34a);
+    color: white;
+    padding: 8px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    z-index: 10;
+    height: 60px;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+}
+
+.logo {
+    height: 40px;
+    margin-right: 12px;
+}
+
+.title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.user-name {
+    font-weight: 500;
+    max-width: 100px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.button {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s ease;
+    font-size: 14px;
+}
+
+.button:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+.button.secondary {
+    background-color: transparent;
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.button.secondary:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.content {
+    flex: 1;
+    height: calc(100vh - 60px);
+    position: relative;
+    overflow: hidden;
+}
+
+.report-container {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+    z-index: 2;
+    background-color: #fff;
+}
+
+.report-container iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: transparent;
+}
+
+/* Estilos para o overlay de carregamento */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 5;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #1e5631;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.login-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(30, 86, 49, 0.9), rgba(46, 125, 50, 0.8), rgba(212, 175, 55, 0.7));
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    padding: 16px;
+}
+
+.login-box {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    padding: 24px 20px;
+    width: 100%;
+    max-width: 400px;
+}
+
+.login-title {
+    color: #1e5631;
+    margin-bottom: 20px;
+    font-size: 22px;
+    text-align: center;
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: #333;
+    font-size: 15px;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    -webkit-appearance: none;
+}
+
+input:focus {
+    outline: none;
+    border-color: #8bc34a;
+    box-shadow: 0 0 0 2px rgba(139, 195, 74, 0.2);
+}
+
+.error-message {
+    color: #e53935;
+    font-size: 14px;
+    margin-top: 5px;
+    display: none;
+}
+
+.error-message.visible {
+    display: block;
+}
+
+.button-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 24px;
+}
+
+.login-button {
+    background: linear-gradient(to right, #1e5631, #2e7d32);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.2s;
+    width: 100%;
+    -webkit-appearance: none;
+}
+
+.login-button:hover {
+    background: linear-gradient(to right, #184a29, #256e29);
+    transform: translateY(-1px);
+}
+
+.register-button {
+    background: linear-gradient(to right, #d4af37, #8bc34a);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.2s;
+    width: 100%;
+    -webkit-appearance: none;
+    margin-top: 10px;
+}
+
+.register-button:hover {
+    background: linear-gradient(to right, #c19b2e, #7cb342);
+    transform: translateY(-1px);
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    display: none;
+    padding: 16px;
+}
+
+.modal.visible {
+    display: flex;
+}
+
+.modal-content {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    padding: 24px 20px;
+    width: 100%;
+    max-width: 400px;
+}
+
+.modal-title {
+    color: #1e5631;
+    margin-bottom: 20px;
+    font-size: 20px;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 24px;
+}
+
+.modal-button {
+    padding: 12px 16px;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    flex: 1;
+    font-size: 15px;
+    transition: all 0.2s;
+}
+
+.modal-button.primary {
+    background: linear-gradient(to right, #1e5631, #2e7d32);
+    color: white;
+}
+
+.modal-button.primary:hover {
+    background: linear-gradient(to right, #184a29, #256e29);
+}
+
+.modal-button.secondary {
+    background-color: #f5f5f5;
+    color: #333;
+}
+
+.modal-button.secondary:hover {
+    background-color: #e5e5e5;
+}
+
+.hidden {
+    display: none;
+}
+
+.tabs {
+    display: flex;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+}
+
+.tab {
+    padding: 10px 20px;
+    cursor: pointer;
+    font-weight: 500;
+    color: #666;
+    position: relative;
+}
+
+.tab.active {
+    color: #1e5631;
+}
+
+.tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(to right, #1e5631, #8bc34a);
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Estilos específicos para mobile */
+@media (max-width: 480px) {
+    .header {
+        padding: 10px 12px;
+    }
+    
+    .title {
+        font-size: 16px;
+    }
+    
+    .user-info {
+        gap: 6px;
+    }
+    
+    .button {
+        padding: 6px 10px;
+        font-size: 13px;
+    }
+    
+    .user-name {
+        max-width: 80px;
+    }
+    
+    .login-box, .modal-content {
+        padding: 20px 16px;
+    }
+    
+    .login-title {
+        font-size: 20px;
+        margin-bottom: 16px;
+    }
+    
+    input {
+        padding: 10px;
+        font-size: 16px;
+    }
+    
+    .login-button, .modal-button, .register-button {
+        padding: 12px 16px;
+    }
+    
+    .tabs {
+        flex-direction: column;
+        border-bottom: none;
+    }
+    
+    .tab {
+        padding: 8px 0;
+        border-bottom: 1px solid #ddd;
+    }
+    
+    .tab.active::after {
+        display: none;
+    }
+    
+    .tab.active {
+        border-bottom: 2px solid #1e5631;
+    }
+}
+</style>
 </head>
 <body>
-  <!-- TODO o seu HTML original fica aqui -->
-  
-  <!-- ... começo da sua estrutura ... -->
-  <div class="container">
-    <div class="header">
-      <div class="logo-container">
+<div class="container">
+<div class="header">
+    <div class="logo-container">
         <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Logo%20Bendito%202-sC9uiPIGvXXdDaQjjMw19LZ9D4aMOQ.png" alt="Logo Transportes" class="logo">
         <div class="title">Relatório Power BI - Transportes</div>
-      </div>
-      <div class="user-info hidden" id="userInfo">
+    </div>
+    <div class="user-info hidden" id="userInfo">
         <span class="user-name" id="userName">Usuário</span>
         <button id="changePasswordButton" class="button secondary">Alterar</button>
         <button id="logoutButton" class="button">Sair</button>
-      </div>
     </div>
+</div>
 
-    <div class="content">
-      <div class="report-container" id="reportContainer">
+<div class="content">
+    <div class="report-container" id="reportContainer">
+        <!-- Overlay de carregamento -->
         <div id="loadingOverlay" class="loading-overlay">
-          <div class="spinner"></div>
+            <div class="spinner"></div>
         </div>
         <iframe id="reportFrame" src="about:blank" allowFullScreen="true"></iframe>
-      </div>
-
-      <div class="login-container" id="loginContainer">
-        <div class="login-box">
-          <div class="tabs">
-            <div class="tab active" id="loginTab">Login</div>
-            <div class="tab" id="registerTab">Cadastro</div>
-          </div>
-
-          <div class="tab-content active" id="loginContent">
-            <h2 class="login-title">Acesso ao Relatório</h2>
-            <div class="form-group">
-              <label for="username">Usuário</label>
-              <input type="text" id="username" placeholder="Digite seu usuário" autocomplete="username">
-            </div>
-            <div class="form-group">
-              <label for="password">Senha</label>
-              <input type="password" id="password" placeholder="Digite sua senha" autocomplete="current-password">
-              <div class="error-message" id="loginError">Usuário ou senha incorretos. Tente novamente.</div>
-            </div>
-            <div class="button-container">
-              <button id="loginButton" class="login-button">Entrar</button>
-            </div>
-          </div>
-
-          <div class="tab-content" id="registerContent">
-            <h2 class="login-title">Cadastre-se</h2>
-            <div class="form-group">
-              <label for="registerEmail">Email</label>
-              <input type="email" id="registerEmail" placeholder="Digite seu email" autocomplete="email">
-            </div>
-            <div class="form-group">
-              <label for="registerUsername">Usuário</label>
-              <input type="text" id="registerUsername" placeholder="Escolha um nome de usuário" autocomplete="username">
-            </div>
-            <div class="form-group">
-              <label for="registerPassword">Senha</label>
-              <input type="password" id="registerPassword" placeholder="Crie uma senha" autocomplete="new-password">
-            </div>
-            <div class="form-group">
-              <label for="confirmPassword">Confirmar Senha</label>
-              <input type="password" id="confirmPassword" placeholder="Confirme sua senha" autocomplete="new-password">
-            </div>
-            <div class="form-group">
-              <label for="accessCode">Código de Acesso</label>
-              <input type="text" id="accessCode" placeholder="Digite o código de acesso">
-              <div class="error-message" id="registerError"></div>
-            </div>
-            <div class="button-container">
-              <button id="registerButton" class="register-button">Cadastrar</button>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
-  </div>
+    
+    <!-- Tela de login -->
+    <div class="login-container" id="loginContainer">
+        <div class="login-box">
+            <div class="tabs">
+                <div class="tab active" id="loginTab">Login</div>
+                <div class="tab" id="registerTab">Cadastro</div>
+            </div>
+            
+            <div class="tab-content active" id="loginContent">
+                <h2 class="login-title">Acesso ao Relatório</h2>
+                
+                <div class="form-group">
+                    <label for="username">Usuário</label>
+                    <input type="text" id="username" placeholder="Digite seu usuário" autocomplete="username">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Senha</label>
+                    <input type="password" id="password" placeholder="Digite sua senha" autocomplete="current-password">
+                    <div class="error-message" id="loginError">Usuário ou senha incorretos. Tente novamente.</div>
+                </div>
+                
+                <div class="button-container">
+                    <button id="loginButton" class="login-button">Entrar</button>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="registerContent">
+                <h2 class="login-title">Cadastre-se</h2>
+                
+                <div class="form-group">
+                    <label for="registerEmail">Email</label>
+                    <input type="email" id="registerEmail" placeholder="Digite seu email" autocomplete="email">
+                </div>
+                
+                <div class="form-group">
+                    <label for="registerUsername">Usuário</label>
+                    <input type="text" id="registerUsername" placeholder="Escolha um nome de usuário" autocomplete="username">
+                </div>
+                
+                <div class="form-group">
+                    <label for="registerPassword">Senha</label>
+                    <input type="password" id="registerPassword" placeholder="Crie uma senha" autocomplete="new-password">
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirmPassword">Confirmar Senha</label>
+                    <input type="password" id="confirmPassword" placeholder="Confirme sua senha" autocomplete="new-password">
+                </div>
+                
+                <div class="form-group">
+                    <label for="accessCode">Código de Acesso</label>
+                    <input type="text" id="accessCode" placeholder="Digite o código de acesso">
+                    <div class="error-message" id="registerError"></div>
+                </div>
+                
+                <div class="button-container">
+                    <button id="registerButton" class="register-button">Cadastrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
 
-  <!-- Modal de Alterar Senha -->
-  <div class="modal" id="changePasswordModal">
-    <div class="modal-content">
-      <h3 class="modal-title">Alterar Senha</h3>
-      <div class="form-group">
+<!-- Modal de Alteração de Senha -->
+<div class="modal" id="changePasswordModal">
+<div class="modal-content">
+    <h3 class="modal-title">Alterar Senha</h3>
+    
+    <div class="form-group">
         <label for="currentPassword">Senha Atual</label>
         <input type="password" id="currentPassword" placeholder="Digite sua senha atual" autocomplete="current-password">
-      </div>
-      <div class="form-group">
+    </div>
+    
+    <div class="form-group">
         <label for="newPassword">Nova Senha</label>
         <input type="password" id="newPassword" placeholder="Digite a nova senha" autocomplete="new-password">
-      </div>
-      <div class="form-group">
+    </div>
+    
+    <div class="form-group">
         <label for="confirmNewPassword">Confirmar Nova Senha</label>
         <input type="password" id="confirmNewPassword" placeholder="Confirme a nova senha" autocomplete="new-password">
         <div class="error-message" id="passwordError"></div>
-      </div>
-      <div class="modal-buttons">
+    </div>
+    
+    <div class="modal-buttons">
         <button id="cancelChangePassword" class="modal-button secondary">Cancelar</button>
         <button id="saveNewPassword" class="modal-button primary">Salvar</button>
-      </div>
     </div>
-  </div>
+</div>
+</div>
 
-  <!-- Script ao final para garantir que elementos existam -->
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      // TODO: insira aqui o seu script JavaScript atualizado e seguro
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Elementos do DOM
+    const loginContainer = document.getElementById('loginContainer');
+    const reportFrame = document.getElementById('reportFrame');
+    const reportContainer = document.getElementById('reportContainer');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const userInfo = document.getElementById('userInfo');
+    const userName = document.getElementById('userName');
+    const loginButton = document.getElementById('loginButton');
+    const logoutButton = document.getElementById('logoutButton');
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    const loginError = document.getElementById('loginError');
+    const changePasswordButton = document.getElementById('changePasswordButton');
+    const changePasswordModal = document.getElementById('changePasswordModal');
+    const currentPasswordInput = document.getElementById('currentPassword');
+    const newPasswordInput = document.getElementById('newPassword');
+    const confirmNewPasswordInput = document.getElementById('confirmNewPassword');
+    const passwordError = document.getElementById('passwordError');
+    const cancelChangePassword = document.getElementById('cancelChangePassword');
+    const saveNewPassword = document.getElementById('saveNewPassword');
+    
+    // Elementos de registro
+    const loginTab = document.getElementById('loginTab');
+    const registerTab = document.getElementById('registerTab');
+    const loginContent = document.getElementById('loginContent');
+    const registerContent = document.getElementById('registerContent');
+    const registerButton = document.getElementById('registerButton');
+    const registerEmail = document.getElementById('registerEmail');
+    const registerUsername = document.getElementById('registerUsername');
+    const registerPassword = document.getElementById('registerPassword');
+    const confirmPassword = document.getElementById('confirmPassword');
+    const accessCode = document.getElementById('accessCode');
+    const registerError = document.getElementById('registerError');
+    
+    // Códigos de acesso e URLs dos relatórios Power BI
+    const reportCodes = {
+        '953116': {
+            name: 'Power bi Bendito - versão celular',
+            url: 'https://app.powerbi.com/view?r=eyJrIjoiYzA1MDI4ZDItNzMyYi00OTZkLWJkMzAtMzg1MDczZGFkNmEzIiwidCI6Ijk2OWI5ZDQ2LTg3MWMtNDNlZS04MTJhLWVmY2FmMGYzMDFhZiJ9'
+        },
+        '987116': {
+            name: 'Power bi Bendito',
+            url: 'https://app.powerbi.com/view?r=eyJrIjoiOTU3NTc1YTUtMWJjMS00OTE1LWFjMGMtMzhkZjU4ODdhZWFhIiwidCI6Ijk2OWI5ZDQ2LTg3MWMtNDNlZS04MTJhLWVmY2FmMGYzMDFhZiJ9'
+        },
+        '940955': {
+            name: 'Power bi Bendito - operacional',
+            url: 'https://app.powerbi.com/view?r=eyJrIjoiNDUxZjg2ZDctMTk2YS00MDdhLTg3NTUtMmIzYTU2OTVlMTliIiwidCI6Ijk2OWI5ZDQ2LTg3MWMtNDNlZS04MTJhLWVmY2FmMGYzMDFhZiJ9'
+        }
+    };
+    
+    // Usuários (em um ambiente real, isso estaria em um banco de dados)
+    // Aqui estamos simulando com localStorage para persistência
+    if (!localStorage.getItem('users')) {
+        // Definir os usuários padrão
+        const defaultUsers = {
+            'renan': {
+                password: '1234',
+                email: 'renan@exemplo.com',
+                accessCode: '987116'
+            },
+            'bruno': {
+                password: '1234',
+                email: 'bruno@exemplo.com',
+                accessCode: '987116'
+            }
+        };
+        localStorage.setItem('users', JSON.stringify(defaultUsers));
+    }
+    
+    // Para depuração - mostrar os usuários no console
+    console.log('Usuários disponíveis:', JSON.parse(localStorage.getItem('users')));
+    
+    // Verificar se já está logado
+    checkLoginStatus();
+    
+    // Detectar tipo de dispositivo
+    function detectDeviceType() {
+        // Verificar se é um dispositivo móvel usando User Agent
+        const mobileUserAgent = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        // Verificar se a tela é pequena (típico de dispositivos móveis)
+        const smallScreen = window.innerWidth <= 768;
+        
+        // Verificar se tem recursos de toque (típico de dispositivos móveis)
+        const touchEnabled = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        
+        // Combinar os fatores para uma detecção mais precisa
+        const isMobile = mobileUserAgent || (smallScreen && touchEnabled);
+        
+        console.log('Detecção de dispositivo:', {
+            mobileUserAgent,
+            smallScreen,
+            touchEnabled,
+            resultado: isMobile ? 'mobile' : 'desktop'
+        });
+        
+        return isMobile ? 'mobile' : 'desktop';
+    }
+    
+    // Função para carregar relatório com base no código de acesso e tipo de dispositivo
+    function loadReport(username) {
+        // Mostrar o overlay de carregamento
+        loadingOverlay.style.display = 'flex';
+        
+        // Obter os dados do usuário
+        const users = JSON.parse(localStorage.getItem('users'));
+        const user = users[username];
+        
+        // Configurar o iframe para ter fundo transparente
+        reportFrame.style.backgroundColor = 'transparent';
+        
+        let reportUrl;
+        
+        // Verificar se o usuário tem um código de acesso válido
+        if (user && user.accessCode) {
+            // Caso especial: usuários com código 987116 têm acesso a ambos os relatórios
+            if (user.accessCode === '987116') {
+                const deviceType = detectDeviceType();
+                if (deviceType === 'mobile') {
+                    // Em dispositivos móveis, usar o relatório para celular (953116)
+                    reportUrl = reportCodes['953116'].url;
+                    console.log(`Carregando relatório móvel para ${username} com código 987116`);
+                } else {
+                    // Em desktop, usar o relatório normal (987116)
+                    reportUrl = reportCodes['987116'].url;
+                    console.log(`Carregando relatório desktop para ${username} com código 987116`);
+                }
+            } else if (reportCodes[user.accessCode]) {
+                // Para outros códigos, carregar o relatório correspondente
+                reportUrl = reportCodes[user.accessCode].url;
+                console.log(`Carregando relatório para ${username} com código de acesso ${user.accessCode}`);
+            } else {
+                // Código inválido, usar fallback
+                const deviceType = detectDeviceType();
+                reportUrl = deviceType === 'mobile' ? reportCodes['953116'].url : reportCodes['987116'].url;
+                console.log(`Usando fallback para ${username} em dispositivo ${deviceType}`);
+            }
+        } else {
+            // Sem código de acesso, usar fallback
+            const deviceType = detectDeviceType();
+            reportUrl = deviceType === 'mobile' ? reportCodes['953116'].url : reportCodes['987116'].url;
+            console.log(`Usando fallback para ${username} em dispositivo ${deviceType}`);
+        }
+        
+        // Carregar o relatório
+        reportFrame.src = reportUrl;
+        
+        // Adicionar um listener para quando o iframe terminar de carregar
+        reportFrame.onload = function() {
+            console.log('Relatório carregado com sucesso');
+            
+            // Esconder o overlay de carregamento após um pequeno atraso
+            setTimeout(function() {
+                loadingOverlay.style.display = 'none';
+            }, 1000);
+        };
+    }
+    
+    // Função para verificar status de login
+    function checkLoginStatus() {
+        const currentUser = localStorage.getItem('currentUser');
+        if (currentUser) {
+            // Usuário está logado
+            userName.textContent = currentUser;
+            userInfo.classList.remove('hidden');
+            loginContainer.classList.add('hidden');
+            
+            // Carregar o relatório apropriado
+            loadReport(currentUser);
+        }
+    }
+    
+    // Função para fazer login
+    function login() {
+        const username = usernameInput.value.trim().toLowerCase();
+        const password = passwordInput.value;
+        
+        if (!username || !password) {
+            showLoginError('Preencha todos os campos.');
+            return;
+        }
+        
+        // Para depuração - mostrar tentativa de login
+        console.log('Tentativa de login:', username, password);
+        
+        const users = JSON.parse(localStorage.getItem('users'));
+        console.log('Usuários disponíveis durante login:', users);
+        
+        if (users[username] && users[username].password === password) {
+            // Login bem-sucedido
+            console.log('Login bem-sucedido para:', username);
+            localStorage.setItem('currentUser', username);
+            
+            // Mostrar nome do usuário
+            userName.textContent = username;
+            userInfo.classList.remove('hidden');
+            loginContainer.classList.add('hidden');
+            
+            // Carregar o relatório apropriado
+            loadReport(username);
+            
+            clearLoginForm();
+        } else {
+            // Login falhou
+            console.log('Login falhou para:', username);
+            showLoginError('Usuário ou senha incorretos. Tente novamente.');
+        }
+    }
+    
+    // Função para registrar novo usuário
+    function register() {
+        const email = registerEmail.value.trim();
+        const username = registerUsername.value.trim().toLowerCase();
+        const password = registerPassword.value;
+        const confirmPwd = confirmPassword.value;
+        const code = accessCode.value.trim();
+        
+        // Validações
+        if (!email || !username || !password || !confirmPwd) {
+            showRegisterError('Preencha todos os campos obrigatórios.');
+            return;
+        }
+        
+        if (!isValidEmail(email)) {
+            showRegisterError('Email inválido.');
+            return;
+        }
+        
+        if (password !== confirmPwd) {
+            showRegisterError('As senhas não coincidem.');
+            return;
+        }
+        
+        if (password.length < 4) {
+            showRegisterError('A senha deve ter pelo menos 4 caracteres.');
+            return;
+        }
+        
+        // Verificar se o código de acesso é válido
+        if (code && !reportCodes[code]) {
+            showRegisterError('Código de acesso inválido.');
+            return;
+        }
+        
+        // Verificar se o usuário já existe
+        const users = JSON.parse(localStorage.getItem('users'));
+        if (users[username]) {
+            showRegisterError('Este nome de usuário já está em uso.');
+            return;
+        }
+        
+        // Adicionar novo usuário
+        users[username] = {
+            password: password,
+            email: email,
+            accessCode: code || '' // Salvar o código de acesso, mesmo que vazio
+        };
+        
+        localStorage.setItem('users', JSON.stringify(users));
+        console.log('Novo usuário registrado:', username, 'com código:', code);
+        
+        // Limpar formulário e mostrar mensagem de sucesso
+        clearRegisterForm();
+        alert('Cadastro realizado com sucesso! Faça login para continuar.');
+        
+        // Mudar para a aba de login
+        switchTab('login');
+    }
+    
+    // Função para validar email
+    function isValidEmail(email) {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
+    }
+    
+    // Função para mostrar erro de login
+    function showLoginError(message) {
+        loginError.textContent = message;
+        loginError.classList.add('visible');
+    }
+    
+    // Função para mostrar erro de registro
+    function showRegisterError(message) {
+        registerError.textContent = message;
+        registerError.classList.add('visible');
+    }
+    
+    // Função para limpar formulário de login
+    function clearLoginForm() {
+        usernameInput.value = '';
+        passwordInput.value = '';
+        loginError.classList.remove('visible');
+    }
+    
+    // Função para limpar formulário de registro
+    function clearRegisterForm() {
+        registerEmail.value = '';
+        registerUsername.value = '';
+        registerPassword.value = '';
+        confirmPassword.value = '';
+        accessCode.value = '';
+        registerError.classList.remove('visible');
+    }
+    
+    // Função para alternar entre abas
+    function switchTab(tab) {
+        if (tab === 'login') {
+            loginTab.classList.add('active');
+            registerTab.classList.remove('active');
+            loginContent.classList.add('active');
+            registerContent.classList.remove('active');
+        } else {
+            loginTab.classList.remove('active');
+            registerTab.classList.add('active');
+            loginContent.classList.remove('active');
+            registerContent.classList.add('active');
+        }
+    }
+    
+    // Função para fazer logout
+    function logout() {
+        localStorage.removeItem('currentUser');
+        userInfo.classList.add('hidden');
+        loginContainer.classList.remove('hidden');
+        reportFrame.src = 'about:blank';
+        loadingOverlay.style.display = 'none';
+        clearLoginForm();
+        clearRegisterForm();
+        switchTab('login');
+    }
+    
+    // Função para abrir modal de alteração de senha
+    function openChangePasswordModal() {
+        currentPasswordInput.value = '';
+        newPasswordInput.value = '';
+        confirmNewPasswordInput.value = '';
+        passwordError.classList.remove('visible');
+        passwordError.textContent = '';
+        changePasswordModal.classList.add('visible');
+    }
+    
+    // Função para fechar modal de alteração de senha
+    function closeChangePasswordModal() {
+        changePasswordModal.classList.remove('visible');
+    }
+    
+    // Função para alterar senha
+    function changePassword() {
+        const currentUser = localStorage.getItem('currentUser');
+        const users = JSON.parse(localStorage.getItem('users'));
+        const currentPassword = currentPasswordInput.value;
+        const newPassword = newPasswordInput.value;
+        const confirmPassword = confirmNewPasswordInput.value;
+        
+        // Verificar senha atual
+        if (users[currentUser].password !== currentPassword) {
+            showPasswordError('Senha atual incorreta.');
+            return;
+        }
+        
+        // Verificar se as novas senhas coincidem
+        if (newPassword !== confirmPassword) {
+            showPasswordError('As senhas não coincidem.');
+            return;
+        }
+        
+        // Verificar se a nova senha tem pelo menos 4 caracteres
+        if (newPassword.length < 4) {
+            showPasswordError('A nova senha deve ter pelo menos 4 caracteres.');
+            return;
+        }
+        
+        // Atualizar senha
+        users[currentUser].password = newPassword;
+        localStorage.setItem('users', JSON.stringify(users));
+        
+        // Fechar modal
+        closeChangePasswordModal();
+        
+        // Mostrar confirmação
+        alert('Senha alterada com sucesso!');
+    }
+    
+    // Função para mostrar erro de senha
+    function showPasswordError(message) {
+        passwordError.textContent = message;
+        passwordError.classList.add('visible');
+    }
+    
+    // Monitorar mudanças na orientação e tamanho da tela
+    window.addEventListener('resize', function() {
+        // Verificar se o usuário está logado
+        const currentUser = localStorage.getItem('currentUser');
+        if (currentUser) {
+            const users = JSON.parse(localStorage.getItem('users'));
+            const user = users[currentUser];
+            
+            // Se o usuário tem código 987116, recarregar o relatório com base no dispositivo
+            if (user.accessCode === '987116') {
+                loadReport(currentUser);
+            }
+        }
     });
-  </script>
+    
+    // Event Listeners
+    loginButton.addEventListener('click', login);
+    registerButton.addEventListener('click', register);
+    
+    // Permitir login com Enter
+    passwordInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            login();
+        }
+    });
+    
+    // Permitir registro com Enter
+    confirmPassword.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            register();
+        }
+    });
+    
+    // Permitir código com Enter
+    accessCode.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            register();
+        }
+    });
+    
+    // Alternar entre abas
+    loginTab.addEventListener('click', function() {
+        switchTab('login');
+    });
+    
+    registerTab.addEventListener('click', function() {
+        switchTab('register');
+    });
+    
+    logoutButton.addEventListener('click', logout);
+    changePasswordButton.addEventListener('click', openChangePasswordModal);
+    cancelChangePassword.addEventListener('click', closeChangePasswordModal);
+    saveNewPassword.addEventListener('click', changePassword);
+    
+    // Fechar modal ao clicar fora dele
+    changePasswordModal.addEventListener('click', function(e) {
+        if (e.target === changePasswordModal) {
+            closeChangePasswordModal();
+        }
+    });
+    
+    // Prevenir zoom em dispositivos móveis ao focar nos inputs
+    document.addEventListener('gesturestart', function(e) {
+        e.preventDefault();
+    });
+});
+</script>
 </body>
 </html>
