@@ -1,146 +1,120 @@
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const loginContainer = document.getElementById('loginContainer');
-    const reportFrame = document.getElementById('reportFrame');
-    const reportContainer = document.getElementById('reportContainer');
-    const loadingOverlay = document.getElementById('loadingOverlay');
-    const userInfo = document.getElementById('userInfo');
-    const userName = document.getElementById('userName');
-    const loginButton = document.getElementById('loginButton');
-    const logoutButton = document.getElementById('logoutButton');
-    const usernameInput = document.getElementById('username');
-    const passwordInput = document.getElementById('password');
-    const loginError = document.getElementById('loginError');
-    const changePasswordButton = document.getElementById('changePasswordButton');
-    const changePasswordModal = document.getElementById('changePasswordModal');
-    const currentPasswordInput = document.getElementById('currentPassword');
-    const newPasswordInput = document.getElementById('newPassword');
-    const confirmNewPasswordInput = document.getElementById('confirmNewPassword');
-    const passwordError = document.getElementById('passwordError');
-    const cancelChangePassword = document.getElementById('cancelChangePassword');
-    const saveNewPassword = document.getElementById('saveNewPassword');
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Relatório Power BI - Transportes</title>
+  <link rel="stylesheet" href="styles.css"> <!-- se quiser separar estilo -->
+</head>
+<body>
+  <!-- TODO o seu HTML original fica aqui -->
+  
+  <!-- ... começo da sua estrutura ... -->
+  <div class="container">
+    <div class="header">
+      <div class="logo-container">
+        <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Logo%20Bendito%202-sC9uiPIGvXXdDaQjjMw19LZ9D4aMOQ.png" alt="Logo Transportes" class="logo">
+        <div class="title">Relatório Power BI - Transportes</div>
+      </div>
+      <div class="user-info hidden" id="userInfo">
+        <span class="user-name" id="userName">Usuário</span>
+        <button id="changePasswordButton" class="button secondary">Alterar</button>
+        <button id="logoutButton" class="button">Sair</button>
+      </div>
+    </div>
 
-    const loginTab = document.getElementById('loginTab');
-    const registerTab = document.getElementById('registerTab');
-    const loginContent = document.getElementById('loginContent');
-    const registerContent = document.getElementById('registerContent');
-    const registerButton = document.getElementById('registerButton');
-    const registerEmail = document.getElementById('registerEmail');
-    const registerUsername = document.getElementById('registerUsername');
-    const registerPassword = document.getElementById('registerPassword');
-    const confirmPassword = document.getElementById('confirmPassword');
-    const accessCode = document.getElementById('accessCode');
-    const registerError = document.getElementById('registerError');
+    <div class="content">
+      <div class="report-container" id="reportContainer">
+        <div id="loadingOverlay" class="loading-overlay">
+          <div class="spinner"></div>
+        </div>
+        <iframe id="reportFrame" src="about:blank" allowFullScreen="true"></iframe>
+      </div>
 
-    const reportCodes = {
-        '953116': {
-            name: 'Power bi Bendito - versão celular',
-            url: 'https://app.powerbi.com/view?r=eyJrIjoiYzA1MDI4ZDItNzMyYi00OTZkLWJkMzAtMzg1MDczZGFkNmEzIiwidCI6Ijk2OWI5ZDQ2LTg3MWMtNDNlZS04MTJhLWVmY2FmMGYzMDFhZiJ9'
-        },
-        '987116': {
-            name: 'Power bi Bendito',
-            url: 'https://app.powerbi.com/view?r=eyJrIjoiOTU3NTc1YTUtMWJjMS00OTE1LWFjMGMtMzhkZjU4ODdhZWFhIiwidCI6Ijk2OWI5ZDQ2LTg3MWMtNDNlZS04MTJhLWVmY2FmMGYzMDFhZiJ9'
-        },
-        '940955': {
-            name: 'Power bi Bendito - operacional',
-            url: 'https://app.powerbi.com/view?r=eyJrIjoiNDUxZjg2ZDctMTk2YS00MDdhLTg3NTUtMmIzYTU2OTVlMTliIiwidCI6Ijk2OWI5ZDQ2LTg3MWMtNDNlZS04MTJhLWVmY2FmMGYzMDFhZiJ9'
-        }
-    };
+      <div class="login-container" id="loginContainer">
+        <div class="login-box">
+          <div class="tabs">
+            <div class="tab active" id="loginTab">Login</div>
+            <div class="tab" id="registerTab">Cadastro</div>
+          </div>
 
-    if (!localStorage.getItem('users')) {
-        const defaultUsers = {
-            'renan': {
-                password: '1234',
-                email: 'renan@exemplo.com',
-                accessCode: '987116'
-            },
-            'bruno': {
-                password: '1234',
-                email: 'bruno@exemplo.com',
-                accessCode: '987116'
-            }
-        };
-        localStorage.setItem('users', JSON.stringify(defaultUsers));
-    }
+          <div class="tab-content active" id="loginContent">
+            <h2 class="login-title">Acesso ao Relatório</h2>
+            <div class="form-group">
+              <label for="username">Usuário</label>
+              <input type="text" id="username" placeholder="Digite seu usuário" autocomplete="username">
+            </div>
+            <div class="form-group">
+              <label for="password">Senha</label>
+              <input type="password" id="password" placeholder="Digite sua senha" autocomplete="current-password">
+              <div class="error-message" id="loginError">Usuário ou senha incorretos. Tente novamente.</div>
+            </div>
+            <div class="button-container">
+              <button id="loginButton" class="login-button">Entrar</button>
+            </div>
+          </div>
 
-    function detectDeviceType() {
-        const mobileUserAgent = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        const smallScreen = window.innerWidth <= 768;
-        const touchEnabled = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-        return (mobileUserAgent || (smallScreen && touchEnabled)) ? 'mobile' : 'desktop';
-    }
+          <div class="tab-content" id="registerContent">
+            <h2 class="login-title">Cadastre-se</h2>
+            <div class="form-group">
+              <label for="registerEmail">Email</label>
+              <input type="email" id="registerEmail" placeholder="Digite seu email" autocomplete="email">
+            </div>
+            <div class="form-group">
+              <label for="registerUsername">Usuário</label>
+              <input type="text" id="registerUsername" placeholder="Escolha um nome de usuário" autocomplete="username">
+            </div>
+            <div class="form-group">
+              <label for="registerPassword">Senha</label>
+              <input type="password" id="registerPassword" placeholder="Crie uma senha" autocomplete="new-password">
+            </div>
+            <div class="form-group">
+              <label for="confirmPassword">Confirmar Senha</label>
+              <input type="password" id="confirmPassword" placeholder="Confirme sua senha" autocomplete="new-password">
+            </div>
+            <div class="form-group">
+              <label for="accessCode">Código de Acesso</label>
+              <input type="text" id="accessCode" placeholder="Digite o código de acesso">
+              <div class="error-message" id="registerError"></div>
+            </div>
+            <div class="button-container">
+              <button id="registerButton" class="register-button">Cadastrar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-    function loadReport(username) {
-        loadingOverlay.style.display = 'flex';
-        const users = JSON.parse(localStorage.getItem('users'));
-        const user = users[username];
-        let reportUrl;
+  <!-- Modal de Alterar Senha -->
+  <div class="modal" id="changePasswordModal">
+    <div class="modal-content">
+      <h3 class="modal-title">Alterar Senha</h3>
+      <div class="form-group">
+        <label for="currentPassword">Senha Atual</label>
+        <input type="password" id="currentPassword" placeholder="Digite sua senha atual" autocomplete="current-password">
+      </div>
+      <div class="form-group">
+        <label for="newPassword">Nova Senha</label>
+        <input type="password" id="newPassword" placeholder="Digite a nova senha" autocomplete="new-password">
+      </div>
+      <div class="form-group">
+        <label for="confirmNewPassword">Confirmar Nova Senha</label>
+        <input type="password" id="confirmNewPassword" placeholder="Confirme a nova senha" autocomplete="new-password">
+        <div class="error-message" id="passwordError"></div>
+      </div>
+      <div class="modal-buttons">
+        <button id="cancelChangePassword" class="modal-button secondary">Cancelar</button>
+        <button id="saveNewPassword" class="modal-button primary">Salvar</button>
+      </div>
+    </div>
+  </div>
 
-        if (user && user.accessCode) {
-            if (user.accessCode === '987116') {
-                const deviceType = detectDeviceType();
-                reportUrl = deviceType === 'mobile' ? reportCodes['953116'].url : reportCodes['987116'].url;
-            } else if (reportCodes[user.accessCode]) {
-                reportUrl = reportCodes[user.accessCode].url;
-            } else {
-                const deviceType = detectDeviceType();
-                reportUrl = deviceType === 'mobile' ? reportCodes['953116'].url : reportCodes['987116'].url;
-            }
-        } else {
-            const deviceType = detectDeviceType();
-            reportUrl = deviceType === 'mobile' ? reportCodes['953116'].url : reportCodes['987116'].url;
-        }
-
-        // Ajuste de resolução dinâmica após o carregamento
-        reportFrame.src = reportUrl;
-        reportFrame.onload = function () {
-            setTimeout(function () {
-                reportFrame.style.height = reportContainer.offsetHeight + 'px';
-                loadingOverlay.style.display = 'none';
-            }, 1000);
-        };
-    }
-
-    function checkLoginStatus() {
-        const currentUser = localStorage.getItem('currentUser');
-        if (currentUser) {
-            userName.textContent = currentUser;
-            userInfo.classList.remove('hidden');
-            loginContainer.classList.add('hidden');
-            loadReport(currentUser);
-        }
-    }
-
-    function login() {
-        const username = usernameInput.value.trim().toLowerCase();
-        const password = passwordInput.value;
-        const users = JSON.parse(localStorage.getItem('users'));
-
-        if (users[username] && users[username].password === password) {
-            localStorage.setItem('currentUser', username);
-            userName.textContent = username;
-            userInfo.classList.remove('hidden');
-            loginContainer.classList.add('hidden');
-            loadReport(username);
-            usernameInput.value = '';
-            passwordInput.value = '';
-            loginError.classList.remove('visible');
-        } else {
-            loginError.textContent = 'Usuário ou senha incorretos. Tente novamente.';
-            loginError.classList.add('visible');
-        }
-    }
-
-    function logout() {
-        localStorage.removeItem('currentUser');
-        userInfo.classList.add('hidden');
-        loginContainer.classList.remove('hidden');
-        reportFrame.src = 'about:blank';
-        loadingOverlay.style.display = 'none';
-    }
-
-    checkLoginStatus();
-    loginButton.addEventListener('click', login);
-    logoutButton.addEventListener('click', logout);
-});
-</script>
+  <!-- Script ao final para garantir que elementos existam -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // TODO: insira aqui o seu script JavaScript atualizado e seguro
+    });
+  </script>
+</body>
+</html>
